@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Eléctrica Multifunción</title>
+
+    <!-- Librerías externas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+
+    <!-- Hojas de estilo -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Contenedor del formulario de inicio de sesión -->
+    <div id="login-container">
+        <div class="login-box">
+            <h2>Inicio de Sesión</h2>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Entrar</button>
+                <div id="error-message" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contenedor de la aplicación principal -->
+    <div id="app-container" style="display: none;">
+        <div class="top-bar">
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <div class="pestanas">
+                    <button class="pestana-btn active" data-pestana="consumo">Censo de Carga</button>
+                    <button class="pestana-btn" data-pestana="corrientes">Cálculo por Corrientes</button>
+                    <button class="pestana-btn" data-pestana="facturas">Facturación</button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div id="usuario-activo" class="usuario-activo"></div>
+                    <div class="dropdown-menu-container">
+                        <button class="dropdown-toggle-btn" id="user-menu-toggle">
+                            Menú <span class="arrow-down">&#9660;</span>
+                        </button>
+                                                <div class="dropdown-content" id="user-dropdown-content">
+                                                    <a href="#" id="logout-btn">Cerrar Sesión</a>
+                                                    <a href="#" id="menu-artefactos">Artefactos</a>
+                                                    <a href="#" id="settings-btn" data-pestana="configuracion">Configuración</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        
+                                <!-- ========= CONTENIDO PESTAÑA CONSUMO ========= -->
+                                <div id="consumo" class="contenido-pestana active">
+                                    <h1>Calculadora de Consumo Eléctrico</h1>
+                        
+                                    <div class="grupo-input">
+                                        <div style="flex-grow: 1;">
+                                            <input id="lista-aparatos" placeholder="Buscar dispositivos..." style="width: 100%; padding: 8px;">
+                                        </div>
+                                    </div>
+                        
+                                    <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
+                                        <button id="boton-calcular" class="oculto">Calcular Total</button>
+                                        <button id="boton-limpiar" style="background: #dc3545; display: none;">Limpiar Todo</button>
+                                    </div>
+                        
+                                    <div id="items-seleccionados" style="margin: 20px 0;"></div>
+                                    <div id="resultado"></div>
+                                </div>
+                        
+                                <!-- ========= CONTENIDO PESTAÑA CORRIENTES ========= -->
+                                <div id="corrientes" class="contenido-pestana">
+                                    <h1>Cálculo por Corrientes</h1>
+                        
+                                    <div class="grupo-input">
+                                        <div>
+                                            <label>Voltaje R (V):</label>
+                                            <input type="number" id="voltaje-r" class="input-config" value="120">
+                                        </div>
+                        
+                                        <div>
+                                            <label>Voltaje S (V):</label>
+                                            <input type="number" id="voltaje-s" class="input-config" value="120">
+                                        </div>
+                        
+                                        <div>
+                                            <label>Voltaje T (V):</label>
+                                            <input type="number" id="voltaje-t" class="input-config" value="120">
+                                        </div>
+                                    </div>
+                        
+                                    <div class="grupo-input">
+                                        <div>
+                                            <label>Corriente R (A):</label>
+                                            <input type="number" id="corriente-r" class="input-config">
+                                        </div>
+                        
+                                        <div>
+                                            <label>Corriente S (A):</label>
+                                            <input type="number" id="corriente-s" class="input-config">
+                                        </div>
+                        
+                                        <div>
+                                            <label>Corriente T (A):</label>
+                                            <input type="number" id="corriente-t" class="input-config">
+                                        </div>
+                                    </div>
+                        
+                                    <div class="grupo-input">
+                                        <div style="flex-grow:1;">
+                                            <p class="info">Los parámetros "Horas Mensuales", "Días por Mes" y los costos (kWh, kVA) se toman de la sección "Configuración General".</p>
+                                        </div>
+                                    </div>
+                        
+                                    <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
+                                        <button id="boton-calcular-corrientes">Calcular</button>
+                                        <button id="boton-limpiar-corrientes" style="background: #dc3545; display: none;">Limpiar Campos</button>
+                                    </div>
+                        
+                                    <div id="resultado-corrientes" class="oculto"></div>
+                                </div>
+                        
+                                <!-- ========= CONTENIDO PESTAÑA FACTURAS ========= -->
+                                <div id="facturas" class="contenido-pestana">
+                                    <h1>Facturación</h1>
+                        
+                                    <div class="fact-tabs">
+                                        <div class="fact-tab-buttons">
+                                            <button class="fact-tab-btn active" data-tab="fecha-instalacion">Por Fecha de Instalación</button>
+                                            <button class="fact-tab-btn" data-tab="ctc">Por Carga Total Conectada (CTC)</button>
+                                        </div>
+                                    </div>
+                        
+                                    <div id="formulario-fecha-instalacion" class="fact-tab-content">
+                                        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: nowrap;">
+                                            <div>
+                                                <label for="fecha-instalacion">Fecha de Instalación:</label>
+                                                <input type="date" id="fecha-instalacion" class="input-config">
+                                            </div>
+                                            <div>
+                                                <label for="fecha-actual">Fecha Actual:</label>
+                                                <input type="date" id="fecha-actual" class="input-config" value="">
+                                            </div>
+                                            <div>
+                                                <label for="lectura-instalacion">Lectura de Instalación:</label>
+                                                <input type="number" id="lectura-instalacion" class="input-config">
+                                            </div>
+                                            <div>
+                                                <label for="lectura-contador">Lectura del Contador:</label>
+                                                <input type="number" id="lectura-contador" class="input-config">
+                                            </div>
+                                        </div>
+                                        <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
+                                            <button id="calcular-fecha-instalacion">Calcular</button>
+                                        </div>
+                                    </div>
+                        
+                                    <div id="formulario-ctc" class="fact-tab-content">
+                                        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: nowrap;">
+                                            <div>
+                                                <label for="ctc-input">CTC (kVA):</label>
+                                                <input type="number" id="ctc-input" class="input-config">
+                                            </div>
+                                        </div>
+                                        <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
+                                            <button id="calcular-ctc">Calcular</button>
+                                        </div>
+                                    </div>
+                        
+                                    <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
+                                        <button id="boton-limpiar-facturas" style="background: #dc3545; display: none;">Limpiar Todo</button>
+                                    </div>
+                        
+                                    <div id="resultado-facturas" style="margin-top: 20px;"></div>
+                                </div>
+                        
+                                <!-- ========= CONTENIDO PESTAÑA CONFIGURACIÓN ========= -->
+                                <div id="configuracion" class="contenido-pestana">
+                                    <h1>Configuración General</h1>
+                        
+                                    <div class="grupo-input">
+                                        <div>
+                                            <label for="horas-mes-config">Horas Mensuales:</label>
+                                            <input type="number" id="horas-mes-config" value="300" class="input-config">
+                                        </div>
+                        
+                                        <div>
+                                            <label for="dias-mes-config">Días por Mes:</label>
+                                            <input type="number" id="dias-mes-config" value="30" class="input-config">
+                                        </div>
+                        
+                                        <div>
+                                            <label for="costo-kva-config">Costo kVA ($):</label>
+                                            <input type="number" id="costo-kva-config" value="1.30" step="0.01" class="input-config">
+                                        </div>
+                        
+                                        <div>
+                                            <label for="iva-porcentaje-config">IVA (%):</label>
+                                            <input type="number" id="iva-porcentaje-config" value="16" step="0.1" class="input-config">
+                                        </div>
+                        
+                                        <div>
+                                            <label for="valor-dolar-config">Tipo de cambio ($ a Bs):</label>
+                                            <input type="number" id="valor-dolar-config" value="65" step="0.1" class="input-config">
+                                        </div>
+                        
+                                        <div>
+                                            <label for="costo-kwh-config">Costo kWh ($):</label>
+                                            <input type="number" id="costo-kwh-config" value="0.01" step="0.01" class="input-config">
+                                        </div>
+                                    </div>
+                        
+
+                        
+                                    <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
+                                        <button id="guardar-configuracion">Guardar Configuración</button>
+                                    </div>
+                                    <div id="mensaje-configuracion" style="margin-top: 15px; color: green; font-weight: bold;"></div>
+                        
+                                    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+                        
+                                    <!-- Contenedor para Crear Usuarios -->
+                                    <div id="crear-usuario-container">
+                                        <h2>Crear Nuevo Usuario</h2>
+                                        <form id="crear-usuario-form">
+                                            <div class="input-group">
+                                                <label for="new-username">Nombre de Usuario:</label>
+                                                <input type="text" id="new-username" name="new-username" required>
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="new-password">Contraseña:</label>
+                                                <input type="password" id="new-password" name="new-password" required>
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="confirm-password">Confirmar Contraseña:</label>
+                                                <input type="password" id="confirm-password" name="confirm-password" required>
+                                            </div>
+                                            <button type="submit" id="boton-crear-usuario">Crear Usuario</button>
+                                            <div id="mensaje-crear-usuario" class="error-message" style="color: green;"></div>
+                                        </form>
+                                    </div>
+                        
+                                    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+                        
+                                    <!-- Nuevo Contenedor para Control de Usuarios -->
+                                    <div id="user-management-container">
+                                        <h2>Control de Usuarios Existentes</h2>
+                                        <div class="user-list-header">
+                                            <span>Usuario</span>
+                                            <span>Activo</span>
+                                            <span>Censo</span>
+                                            <span>Corrientes</span>
+                                            <span>Facturación</span>
+                                            <span>Configuración</span>
+                                        </div>
+                                        <div id="users-list">
+                                            <!-- Los usuarios se cargarán aquí dinámicamente -->
+                                        </div>
+                                        <div id="mensaje-gestion-usuarios" style="margin-top: 15px; color: green; font-weight: bold;"></div>
+                                    </div>
+                        
+                                </div>
+                            </div>
+                        
+                            <!-- Scripts -->
+                            <script src="Scripts/common.js"></script>
+                            <script src="Scripts/artefactos.js"></script>
+                            <script src="Scripts/cnosumo.js"></script>
+                            <script src="Scripts/corrientes.js"></script>
+                            <script src="Scripts/facturas.js"></script> <!-- Asegúrate de que este script exista si lo usas -->
+                            <script src="Scripts/login.js"></script>
+                        
+                            <!-- Modal de confirmación (usado por Facturación para consumos altos) -->
+                            <div id="confirm-modal" class="confirm-modal" style="display:none;">
+                                <div class="confirm-modal-content">
+                                    <p id="confirm-modal-message" class="confirm-modal-message"></p>
+                                    <div class="confirm-modal-actions">
+                                        <button id="confirm-modal-accept" class="btn btn-primary">Continuar</button>
+                                        <button id="confirm-modal-cancel" class="btn btn-secondary">Cancelar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                        
+                        
+                            <!-- Modal de Administración de Artefactos -->
+                        
+                            <div id="modal-artefactos" class="modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-artefactos-titulo">
+                        
+                                <div class="modal-overlay"></div>
+                        
+                                <div class="modal-content">
+                        
+                                    <button class="modal-close" aria-label="Cerrar">&times;</button>
+                        
+                                    <h2 id="modal-artefactos-titulo">Administración de Artefactos</h2>
+                        
+                        
+                        
+                                    <div class="artefactos-container">
+                        
+                                        <!-- Formulario de Artefactos -->
+                        
+                                        <div class="artefactos-form">
+                        
+                                            <form id="form-artefactos">
+                        
+                                                <input type="hidden" id="artefactoId">
+                        
+                                                <div class="form-grid">
+                        
+                                                                                <div class="form-group">
+                        
+                                                                                    <label for="txtAparatos">Aparato:</label>
+                        
+                                                                                    <input type="text" id="txtAparatos" required>
+                        
+                                                                                    <span class="error-msg"></span>
+                        
+                                                                                </div>
+                        
+                                                                                <div class="form-group">
+                        
+                                                                                    <label for="numWatt">Watt (W):</label>
+                        
+                                                                                    <input type="number" id="numWatt" min="0" step="0.01" required>
+                        
+                                                                                    <span class="error-msg"></span>
+                        
+                                                                                </div>
+                        
+                                                                                <div class="form-group">
+                        
+                                                                                    <label for="numFP">Factor de Potencia (FP):</label>
+                        
+                                                                                    <input type="number" id="numFP" min="0.1" max="1" step="0.01" value="0.85">
+                        
+                                                                                    <span class="error-msg"></span>
+                        
+                                                                                </div>
+                        
+                                                                                <div class="form-group">
+                        
+                                                                                    <label for="numHD">Horas/Día (H/D):</label>
+                        
+                                                                                    <input type="number" id="numHD" min="0" max="24" step="0.1" value="1">
+                        
+                                                                                    <span class="error-msg"></span>
+                        
+                                                                                </div>
+                        
+                                                                                <div class="form-group">
+                        
+                                                                                    <label for="selFase">Fase:</label>
+                        
+                                                                                    <select id="selFase">
+                        
+                                                                                        <option value="1">1</option>
+                        
+                                                                                        <option value="2">2</option>
+                        
+                                                                                        <option value="3">3</option>
+                        
+                                                                                    </select>
+                        
+                                                                                </div>
+                        
+                                                                                <div class="form-group">
+                        
+                                                                                                                    <label for="numVoltaje">Voltaje (V):</label>
+                        
+                                                                                                                    <select id="numVoltaje">
+                        
+                                                                                                                        <option value="115">115</option>
+                        
+                                                                                                                        <option value="220">220</option>
+                        
+                                                                                                                    </select>
+                        
+                                                                                    <span class="error-msg"></span>
+                        
+                                                                                </div>
+                        
+                                                                            </div>
+                        
+                                                                            <div class="form-buttons">
+                        
+                                                                                <button type="button" id="btn-guardar-artefacto">Guardar</button>
+                        
+                                                                                <button type="button" id="btn-nuevo-artefacto">Nuevo</button>
+                        
+                                                                                <button type="button" id="btn-cancelar-artefacto" class="btn-secondary">Cancelar</button>
+                        
+                                                                            </div>
+                        
+                                                                        </form>
+                        
+                                                                    </div>
+                        
+                                                    
+                        
+                                                                    <!-- Tabla de Artefactos -->
+                        
+                                                                    <div class="artefactos-tabla-container">
+                        
+                                                                        <table id="tabla-artefactos">
+                        
+                                                                            <thead>
+                        
+                                                                                <tr>
+                        
+                                                                                    <th>Aparato</th>
+                        
+                                                                                    <th>Watt</th>
+                        
+                                                                                    <th>FP</th>
+                        
+                                                                                    <th>H/D</th>
+                        
+                                                                                    <th>Fase</th>
+                        
+                                                                                    <th>Voltaje</th>
+                        
+                                                                                    <th>Acciones</th>
+                        
+                                                                                </tr>
+                        
+                                                                            </thead>
+                        
+                                                                            <tbody>
+                        
+                                                                                <!-- Filas se insertarán dinámicamente -->
+                        
+                                                                            </tbody>
+                        
+                                                                        </table>
+                        
+                                        </div>
+                        
+                                    </div>
+                        
+                                </div>
+                        
+                            </div>
+                        
+                        
+                        
+                        </body>
+                        
+                        </html>
+                        
+                        
