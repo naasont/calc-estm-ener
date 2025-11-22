@@ -1,19 +1,16 @@
 /**
  * =================================================================================
  * App Core - common.js
- * Versión: 2.0 (Con Auto-Limpieza de Caché y Versionado)
+ * Versión: 2.2 (Integración Firebase Cloud Backup + Excel Inteligente)
  * =================================================================================
  */
 
 window.App = window.App || {};
 
 App.Constants = {
-    // --- CAMBIA ESTO CUANDO HAGAS CAMBIOS IMPORTANTES ---
-    APP_VERSION: '2.1', // Al cambiar este número, se fuerza el cierre de sesión a todos
-    // ----------------------------------------------------
-    
+    APP_VERSION: '2.2', // Nueva versión fuerza limpieza de caché
     LS_KEYS: {
-        VERSION: 'app:version', // Nueva clave para controlar versiones
+        VERSION: 'app:version',
         USERS: 'app:users',
         CURRENT_USER: 'app:currentUser',
         AUTH: 'app:isAuthenticated',
@@ -23,13 +20,99 @@ App.Constants = {
     DEFAULTS: {
         diasMes: 30,
         horasMes: 300,
-        costoKwh: 0.011,
-        costoKva: 1.87,
+        costoKwh: 0.01,
+        costoKva: 1.30,
         ivaPorcentaje: 16,
-        valorDolar: 240,
+        valorDolar: 65,
         version: 1
     },
-    ADMIN_HASH: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9'
+    ADMIN_HASH: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
+    
+    // --- CONFIGURACIÓN FIREBASE (Reemplaza con tus datos reales) ---
+    FIREBASE_CONFIG: {
+        apiKey: "AIzaSyDPSQyLGbg767iFfzjaNSNJcOQJOMMKWGQ",
+        authDomain: "calculadora-energia-d9ba6.firebaseapp.com",
+        projectId: "calculadora-energia-d9ba6",
+        storageBucket: "calculadora-energia-d9ba6.appspot.com",
+        messagingSenderId: "414769253348",
+        appId: "1:414769253348:web:59e213cf9805b73e87d5f1"
+    }
+};
+
+// --- Módulo de Nube (Firebase) ---
+App.Cloud = {
+    db: null,
+    init() {
+        if (!firebase.apps.length) {
+            try {
+                firebase.initializeApp(App.Constants.FIREBASE_CONFIG);
+                this.db = firebase.firestore();
+                console.log("Firebase inicializado correctamente.");
+            } catch (e) {
+                console.error("Error iniciando Firebase. Revisa la configuración en common.js", e);
+            }
+        } else {
+            this.db = firebase.firestore();
+        }
+    },
+
+    // Subir respaldo (Sobrescribe el documento 'backup_general')
+    async uploadBackup() {
+        if (!this.db) return { success: false, message: "Firebase no configurado." };
+        
+        try {
+            const artifacts = JSON.parse(localStorage.getItem(App.Constants.LS_KEYS.ARTIFACTS) || '[]');
+            const config = App.Config.data;
+            const user = App.Auth.currentUser ? App.Auth.currentUser.username : 'anon';
+
+            // Estructura del Backup
+            const payload = {
+                timestamp: new Date().toISOString(),
+                user: user,
+                data: {
+                    config: config,
+                    artifacts: artifacts
+                },
+                version: App.Constants.APP_VERSION
+            };
+
+            // Guardamos en la colección 'backups', documento 'main_data'
+            // (Puedes cambiar 'main_data' por algo dinámico si quieres múltiples respaldos)
+            await this.db.collection('backups').doc('main_data').set(payload);
+            
+            return { success: true, message: "Respaldo subido exitosamente a la Nube." };
+        } catch (e) {
+            console.error(e);
+            return { success: false, message: "Error subiendo a nube: " + e.message };
+        }
+    },
+
+    // Descargar respaldo
+    async downloadBackup() {
+        if (!this.db) return { success: false, message: "Firebase no configurado." };
+
+        try {
+            const doc = await this.db.collection('backups').doc('main_data').get();
+            
+            if (doc.exists) {
+                const cloudData = doc.data().data; // Accedemos al objeto 'data' del payload
+                
+                // Guardar en LocalStorage
+                localStorage.setItem(App.Constants.LS_KEYS.CONFIG, JSON.stringify(cloudData.config));
+                localStorage.setItem(App.Constants.LS_KEYS.ARTIFACTS, JSON.stringify(cloudData.artifacts));
+                
+                // Actualizar memoria
+                App.Config.data = cloudData.config;
+                
+                return { success: true, message: "Datos descargados de la nube. Recargando..." };
+            } else {
+                return { success: false, message: "No existe ningún respaldo en la nube." };
+            }
+        } catch (e) {
+            console.error(e);
+            return { success: false, message: "Error bajando de nube: " + e.message };
+        }
+    }
 };
 
 // --- Módulo de Configuración ---
@@ -55,10 +138,7 @@ App.Config = {
     },
     save() { localStorage.setItem(App.Constants.LS_KEYS.CONFIG, JSON.stringify(this.data)); },
     updateFromDOM() {
-        const getVal = (id) => {
-            const el = document.getElementById(id);
-            return el ? parseFloat(el.value) : 0;
-        };
+        const getVal = (id) => { const el = document.getElementById(id); return el ? parseFloat(el.value) : 0; };
         this.data.horasMes = getVal('horas-mes-config') || App.Constants.DEFAULTS.horasMes;
         this.data.diasMes = getVal('dias-mes-config') || App.Constants.DEFAULTS.diasMes;
         this.data.costoKva = getVal('costo-kva-config') || App.Constants.DEFAULTS.costoKva;
@@ -187,34 +267,22 @@ App.Utils = {
     }
 };
 
-// --- Módulo de Autenticación (CON LIMPIEZA AUTOMÁTICA) ---
+// --- Módulo de Autenticación (Versión Blindada) ---
 App.Auth = {
     users: [],
     currentUser: null,
 
     init() {
-        // 1. Verificar si hubo actualización de versión
         this.validateAppVersion();
-        
-        // 2. Cargar y validar sesión
         this.loadUsers();
         this.checkSession();
     },
 
-    // --- NUEVA FUNCIÓN: Limpieza por Versión ---
     validateAppVersion() {
         const currentVersion = localStorage.getItem(App.Constants.LS_KEYS.VERSION);
-        
         if (currentVersion !== App.Constants.APP_VERSION) {
-            console.warn(`Nueva versión detectada (${App.Constants.APP_VERSION}). Limpiando sesión antigua...`);
-            
-            // Borrar sesión para obligar a loguearse de nuevo
+            console.warn("Actualización detectada. Limpiando sesión...");
             this.logout();
-            
-            // (Opcional) Si la estructura de usuarios cambió mucho, borrar usuarios también:
-            // localStorage.removeItem(App.Constants.LS_KEYS.USERS);
-
-            // Actualizar la versión almacenada
             localStorage.setItem(App.Constants.LS_KEYS.VERSION, App.Constants.APP_VERSION);
         }
     },
@@ -224,9 +292,7 @@ App.Auth = {
         if (raw) {
             try { this.users = JSON.parse(raw); } 
             catch (e) { this.createDefaultAdmin(); }
-        } else {
-            this.createDefaultAdmin();
-        }
+        } else { this.createDefaultAdmin(); }
     },
     createDefaultAdmin() {
         this.users = [{
@@ -238,42 +304,28 @@ App.Auth = {
         this.saveUsers();
     },
     saveUsers() { localStorage.setItem(App.Constants.LS_KEYS.USERS, JSON.stringify(this.users)); },
-    
     checkSession() {
         const savedUserStr = localStorage.getItem(App.Constants.LS_KEYS.CURRENT_USER);
         const isAuthenticated = localStorage.getItem(App.Constants.LS_KEYS.AUTH) === 'true';
-        
         if (isAuthenticated && savedUserStr) {
             try {
                 const savedUser = JSON.parse(savedUserStr);
-                // Validar contra la BD real
                 const userInDb = this.users.find(u => u.username === savedUser.username);
-                if (userInDb) {
-                    this.currentUser = userInDb;
-                } else {
-                    // Sesión inválida (usuario borrado o corrupto) -> Logout forzoso
-                    this.logout();
-                }
+                if (userInDb) { this.currentUser = userInDb; } 
+                else { this.logout(); }
             } catch (e) { this.logout(); }
-        } else {
-            this.currentUser = null;
-        }
+        } else { this.currentUser = null; }
     },
-
     async login(username, password) {
         this.loadUsers();
         const user = this.users.find(u => u.username.toLowerCase() === username.toLowerCase());
-        
         if (user) {
             if (!user.isActive) return { success: false, message: 'Cuenta inactiva.' };
             const inputHash = await App.Utils.hashPassword(password);
-            
             if (user.password === inputHash) {
                 this.createSession(user);
                 return { success: true };
-            } 
-            // Auto-migración segura para casos de texto plano
-            else if (user.password.length !== 64 && user.password === password) {
+            } else if (user.password.length !== 64 && user.password === password) {
                 user.password = inputHash;
                 this.saveUsers();
                 this.createSession(user);
@@ -291,8 +343,7 @@ App.Auth = {
         this.currentUser = null;
         localStorage.removeItem(App.Constants.LS_KEYS.CURRENT_USER);
         localStorage.removeItem(App.Constants.LS_KEYS.AUTH);
-        const appContainer = document.getElementById('app-container');
-        if (appContainer && appContainer.style.display !== 'none') {
+        if (document.getElementById('app-container').style.display !== 'none') {
             window.location.reload();
         }
     },
@@ -307,7 +358,13 @@ App.Auth = {
 
 // --- Módulo UI ---
 App.UI = {
-    init() { this.setupTabs(); this.setupConfigEvents(); this.setupDataEvents(); },
+    init() {
+        App.Cloud.init(); // INICIALIZAR FIREBASE
+        this.setupTabs();
+        this.setupConfigEvents();
+        this.setupDataEvents();
+    },
+
     setupTabs() {
         document.querySelectorAll('.pestana-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -367,6 +424,27 @@ App.UI = {
                     localStorage.removeItem(App.Constants.LS_KEYS.ARTIFACTS);
                     window.location.reload();
                 }
+            });
+        }
+        // --- EVENTOS FIREBASE ---
+        const btnCloudUp = document.getElementById('btn-cloud-upload');
+        if (btnCloudUp) {
+            btnCloudUp.addEventListener('click', async () => {
+                btnCloudUp.textContent = "Subiendo...";
+                const res = await App.Cloud.uploadBackup();
+                App.UI.showMessage('mensaje-import-export', res.message, res.success ? 'green' : 'red');
+                btnCloudUp.textContent = "☁ Subir a Nube";
+            });
+        }
+        const btnCloudDown = document.getElementById('btn-cloud-download');
+        if (btnCloudDown) {
+            btnCloudDown.addEventListener('click', async () => {
+                if(!confirm("Se sobrescribirán los datos locales con los de la nube. ¿Continuar?")) return;
+                btnCloudDown.textContent = "Bajando...";
+                const res = await App.Cloud.downloadBackup();
+                App.UI.showMessage('mensaje-import-export', res.message, res.success ? 'green' : 'red');
+                if (res.success) setTimeout(() => window.location.reload(), 1500);
+                btnCloudDown.textContent = "☁ Bajar de Nube";
             });
         }
     },

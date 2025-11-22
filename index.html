@@ -234,21 +234,19 @@
                                     <div id="mensaje-configuracion" style="margin-top: 15px; font-weight: bold;" aria-live="polite"></div>
                         
                                     <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
-                        
-                                    <!-- Sección de Exportar/Importar -->
-                                    <h2>Gestión de Datos</h2>
-                                    <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
-                                        <button id="btn-exportar-datos">Exportar Datos</button>
-                                        <label for="import-file-input" class="btn-importar">
-                                            Importar Datos
-                                        </label>
-                                        <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                                        <h3>Gestión de Datos (Local y Nube)</h3>
+                                        <button id="btn-exportar-datos" class="btn-importar" style="background-color: #28a745;">JSON Local</button>
+                                        <label for="import-file-input" class="btn-importar" style="background-color: #17a2b8; cursor: pointer; padding: 5px 10px; border-radius: 3px; color: white;">Importar</label>
+                                        <input type="file" id="import-file-input" accept=".json, .xlsx, .xls" style="display: none;">
+                                        <span style="margin: 0 10px; border-left: 1px solid #ccc;"></span> <button id="btn-cloud-upload" style="background-color: #6610f2; color: white;">☁ Subir a Nube</button>
+                                        <button id="btn-cloud-download" style="background-color: #6f42c1; color: white;">☁ Bajar de Nube</button>
+                                        <div style="margin-top: 10px;">
+                                            <button id="btn-formatear-db" style="background-color: #dc3545; color: white; font-size: 0.8em;">Formatear Todo</button>
+                                        </div>
+                                        <span id="mensaje-import-export" style="font-weight: bold;"></span>
                                     </div>
-                                    <p class="info">Exporta la configuración general y el catálogo de artefactos a un archivo JSON. Puedes importar este archivo en otro dispositivo para restaurar los datos.</p>
-                                    <div id="mensaje-import-export" style="margin-top: 15px; font-weight: bold;" aria-live="polite"></div>
-                        
                                     <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
-                        
                                     <!-- Contenedor para Crear Usuarios -->
                                     <div id="crear-usuario-container">
                                         <h2>Crear Nuevo Usuario</h2>
@@ -293,7 +291,10 @@
                             </div>
                         
                             <!-- Scripts -->
-                            <script src="Scripts/common.js?v=2"></script>
+                            <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="Scripts/common.js?v=2.2"></script>
     <script src="Scripts/login.js?v=2"></script>
     <script src="Scripts/artefactos.js?v=2"></script>
     <script src="Scripts/consumo.js?v=2"></script>

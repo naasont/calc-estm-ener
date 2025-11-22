@@ -98,8 +98,9 @@
                     if (needsMigration) this.saveArtifacts();
                 } else {
                     artifacts = [
+                        { id: crypto.randomUUID(), nombre: "Aire Acondicionado 12K BTU", vatios: 1100, factorPotencia: 0.92, horasDiarias: 8, fase: 1, voltaje: 220 },
                         { id: crypto.randomUUID(), nombre: "Bomba de Agua 1HP", vatios: 746, factorPotencia: 0.85, horasDiarias: 4, fase: 1, voltaje: 115 },
-                        { id: crypto.randomUUID(), nombre: "Aire Acondicionado 12K BTU", vatios: 1100, factorPotencia: 0.92, horasDiarias: 8, fase: 1, voltaje: 115 },
+                        { id: crypto.randomUUID(), nombre: "Bombillo 18W", vatios: 18, factorPotencia: 0.9, horasDiarias: 6, fase: 1, voltaje: 115 },
                         { id: crypto.randomUUID(), nombre: "TV LED 55\"", vatios: 120, factorPotencia: 0.9, horasDiarias: 6, fase: 1, voltaje: 115 }
                     ];
                     this.saveArtifacts();
