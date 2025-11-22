@@ -1,213 +1,323 @@
-// Objeto global para encapsular el estado y la lógica de la aplicación
-const App = {
-    config: {
-        diasMes: 30,
-        costoKva: 1.30,
-        ivaPorcentaje: 16,
-        valorDolar: 65,
-        costoKwh: 0.01,
-        horasMes: 300 // Usado por 'Cálculo por Corrientes'
+/**
+ * =================================================================================
+ * App Core - common.js
+ * Arquitectura centralizada (Versión Segura SHA-256)
+ * =================================================================================
+ */
+
+window.App = window.App || {};
+
+App.Constants = {
+    LS_KEYS: {
+        USERS: 'app:users',
+        CURRENT_USER: 'app:currentUser',
+        AUTH: 'app:isAuthenticated',
+        CONFIG: 'app:config',
+        ARTIFACTS: 'app:artefactos',
+        MIGRATION: 'app:storageMigrated:v1'
     },
-    users: [], // Almacena todos los usuarios
-    currentUser: null // Almacena el usuario logueado
+    DEFAULTS: {
+        diasMes: 30,
+        horasMes: 300,
+        costoKwh: 0.011,
+        costoKva: 1.87,
+        ivaPorcentaje: 16,
+        valorDolar: 240,
+        version: 1
+    }
 };
 
-// Array global para almacenar los usuarios
-// ¡ADVERTENCIA DE SEGURIDAD! Almacenar usuarios y contraseñas en localStorage no es seguro para producción.
-// Esto es solo para fines de demostración del lado del cliente.
-let users = [];
-
-// Control de pestañas
-document.querySelectorAll('.pestana-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        // Remover clase activa de todos los botones de pestaña y contenidos
-        document.querySelectorAll('.pestana-btn, .contenido-pestana').forEach(el => {
-            el.classList.remove('active');
-        });
-
-        // Activar el botón de pestaña clicado
-        this.classList.add('active');
-
-        // Obtener el ID de la pestaña a mostrar
-        const pestanaId = this.dataset.pestana;
-
-        // Verificar permisos antes de mostrar la pestaña
-        if (checkModulePermission(pestanaId)) {
-            document.getElementById(pestanaId).classList.add('active');
-        } else {
-            // Si no tiene permiso, redirigir a una página de "Acceso Denegado" o mostrar un mensaje
-            alert('Acceso denegado a este módulo.');
-            // Opcional: Volver a la pestaña de consumo o a una página de inicio
-            document.getElementById('consumo').classList.add('active');
-            document.querySelector('.pestana-btn[data-pestana="consumo"]').classList.add('active');
-        }
-
-        // Ocultar el menú desplegable del usuario si está abierto
-        const userDropdownContent = document.getElementById('user-dropdown-content');
-        if (userDropdownContent && userDropdownContent.classList.contains('show')) {
-            userDropdownContent.classList.remove('show');
-        }
-    });
-});
-
-// Función para verificar si el usuario actual tiene permiso para un módulo
-function checkModulePermission(moduleId) {
-    const currentUser = localStorage.getItem('currentUser');
-    if (!currentUser) {
-        // Si no hay usuario logueado, permitir acceso solo a la página de login (que ya está manejada)
-        // O denegar acceso a cualquier módulo de la app
-        return false;
-    }
-    const parsedUser = JSON.parse(currentUser);
-
-    // Si el usuario es 'admin', tiene acceso a todo
-    if (parsedUser.username === 'admin') {
-        return true;
-    }
-
-    // Si el módulo es 'configuracion', solo el admin tiene acceso
-    if (moduleId === 'configuracion') {
-        return parsedUser.username === 'admin';
-    }
-
-    // Para otros módulos, verificar los permisos específicos del usuario
-    return parsedUser.permissions && parsedUser.permissions[moduleId];
-}
-
-
-// Funciones comunes
-function formatoNumero(num, decimales = 2) {
-    return num.toLocaleString(undefined, {
-        minimumFractionDigits: decimales,
-        maximumFractionDigits: decimales
-    });
-}
-
-// Función global para calcular tarifa residencial
-function calcularTarifaResidencial(totalkWh) {
-    if (totalkWh < 200) return 'TR1';
-    if (totalkWh >= 200 && totalkWh < 500) return 'TR2';
-    return 'TR3';
-}
-
-// Función global para calcular tarifa comercial
-function calcularTarifaComercial(ctc) {
-    if (ctc <= 10) return 'G01';
-    if (ctc > 10 && ctc < 30) return 'G02';
-    return 'G03';
-}
-
-// Función global para calcular costos
-function calcularCostos({ consumoMensual, dac, costoKwh, costoKva, iva, dolar }) {
-    const consumoBase = consumoMensual * costoKwh; // Costo por consumo
-    const ivaTotal = consumoBase * (iva / 100); // IVA
-    const demanda = dac * costoKva; // Costo por demanda
-    const totalUSD = consumoBase + ivaTotal + demanda; // Total en USD
-    const totalBS = totalUSD * dolar; // Total en Bolívares
-
-    return {
-        consumoBase: consumoBase.toFixed(2),
-        ivaTotal: ivaTotal.toFixed(2),
-        demanda: demanda.toFixed(2),
-        totalUSD: totalUSD.toFixed(2),
-        totalBS: totalBS.toFixed(2)
-    };
-}
-
-// Funciones para cargar y guardar la configuración
-function cargarConfiguracion() {
-    const savedConfig = localStorage.getItem('appConfig');
-    if (savedConfig) {
-        appConfig = JSON.parse(savedConfig);
-    }
-    // Actualizar los campos del formulario de configuración con los valores cargados
-    document.getElementById('horas-mes-config').value = appConfig.horasMes;
-    document.getElementById('dias-mes-config').value = appConfig.diasMes;
-    document.getElementById('costo-kva-config').value = appConfig.costoKva;
-    document.getElementById('iva-porcentaje-config').value = appConfig.ivaPorcentaje;
-    document.getElementById('valor-dolar-config').value = appConfig.valorDolar;
-    document.getElementById('costo-kwh-config').value = appConfig.costoKwh;
-}
-
-function guardarConfiguracion() {
-    appConfig.horasMes = parseFloat(document.getElementById('horas-mes-config').value) || 300;
-    appConfig.diasMes = parseFloat(document.getElementById('dias-mes-config').value) || 30;
-    appConfig.costoKva = parseFloat(document.getElementById('costo-kva-config').value) || 1.30;
-    appConfig.ivaPorcentaje = parseFloat(document.getElementById('iva-porcentaje-config').value) || 16;
-    appConfig.valorDolar = parseFloat(document.getElementById('valor-dolar-config').value) || 65;
-    appConfig.costoKwh = parseFloat(document.getElementById('costo-kwh-config').value) || 0.01;
-
-    localStorage.setItem('appConfig', JSON.stringify(appConfig));
-    const mensaje = document.getElementById('mensaje-configuracion');
-    mensaje.textContent = 'Configuración guardada exitosamente.';
-    mensaje.style.color = 'green';
-    setTimeout(() => mensaje.textContent = '', 3000); // Borra el mensaje después de 3 segundos
-}
-
-// Funciones para cargar y guardar usuarios
-function loadUsers() {
-    const savedUsers = localStorage.getItem('appUsers');
-    if (savedUsers) {
-        users = JSON.parse(savedUsers);
-    } else {
-        // Crear un usuario 'admin' por defecto si no hay usuarios
-        users = [{
-            username: 'admin',
-            password: 'password123', // ¡ADVERTENCIA! No seguro para producción.
-            isActive: true,
-            permissions: {
-                consumo: true,
-                corrientes: true,
-                facturas: true,
-                configuracion: true // Admin siempre tiene acceso a configuración
-            }
-        }];
-        saveUsers();
-    }
-}
-
-function saveUsers() {
-    localStorage.setItem('appUsers', JSON.stringify(users));
-}
-
-// Función para verificar si el usuario actual es admin
-function isAdmin() {
-    const currentUser = localStorage.getItem('currentUser');
-    if (!currentUser) return false;
-    return JSON.parse(currentUser).username === 'admin';
-}
-
-// Event listeners para la configuración
-document.addEventListener('DOMContentLoaded', function() {
-    cargarConfiguracion(); // Cargar la configuración al inicio
-    loadUsers(); // Cargar usuarios al inicio
-
-    // Manejador para el menú de Artefactos
-    $('#menu-artefactos').on('click', function(e) {
-        e.preventDefault();
-        if (isAdmin()) {
-            // Si es admin, cierra el dropdown y abre el modal
-            $('#user-dropdown-content').removeClass('show');
-            if (window.Artifacts && typeof window.Artifacts.openModal === 'function') {
-                window.Artifacts.openModal();
+// --- Módulo de Configuración ---
+App.Config = {
+    data: {},
+    init() {
+        try {
+            const saved = localStorage.getItem(App.Constants.LS_KEYS.CONFIG);
+            if (saved) {
+                this.data = JSON.parse(saved);
+                if (!this.data.version || this.data.version < App.Constants.DEFAULTS.version) {
+                    this.data.version = App.Constants.DEFAULTS.version;
+                    this.save();
+                }
             } else {
-                console.error("El módulo de artefactos no está disponible.");
+                this.data = { ...App.Constants.DEFAULTS };
+                this.save();
             }
-        } else {
-            // Si no es admin, muestra un mensaje
-            alert('Acceso restringido. Solo los administradores pueden gestionar artefactos.');
+        } catch (e) {
+            console.error("Error cargando configuración:", e);
+            this.data = { ...App.Constants.DEFAULTS };
         }
-    });
-
-    const guardarConfigBtn = document.getElementById('guardar-configuracion');
-    if (guardarConfigBtn) {
-        guardarConfigBtn.addEventListener('click', guardarConfiguracion);
+        return this.data;
+    },
+    save() { localStorage.setItem(App.Constants.LS_KEYS.CONFIG, JSON.stringify(this.data)); },
+    updateFromDOM() {
+        const getVal = (id) => parseFloat(document.getElementById(id).value);
+        this.data.horasMes = getVal('horas-mes-config') || App.Constants.DEFAULTS.horasMes;
+        this.data.diasMes = getVal('dias-mes-config') || App.Constants.DEFAULTS.diasMes;
+        this.data.costoKva = getVal('costo-kva-config') || App.Constants.DEFAULTS.costoKva;
+        this.data.ivaPorcentaje = getVal('iva-porcentaje-config') || App.Constants.DEFAULTS.ivaPorcentaje;
+        this.data.valorDolar = getVal('valor-dolar-config') || App.Constants.DEFAULTS.valorDolar;
+        this.data.costoKwh = getVal('costo-kwh-config') || App.Constants.DEFAULTS.costoKwh;
+        this.save();
+        return true;
+    },
+    loadToDOM() {
+        if (!document.getElementById('horas-mes-config')) return;
+        document.getElementById('horas-mes-config').value = this.data.horasMes;
+        document.getElementById('dias-mes-config').value = this.data.diasMes;
+        document.getElementById('costo-kva-config').value = this.data.costoKva;
+        document.getElementById('iva-porcentaje-config').value = this.data.ivaPorcentaje;
+        document.getElementById('valor-dolar-config').value = this.data.valorDolar;
+        document.getElementById('costo-kwh-config').value = this.data.costoKwh;
+    },
+    exportData() {
+        try {
+            const artifacts = JSON.parse(localStorage.getItem(App.Constants.LS_KEYS.ARTIFACTS) || '[]');
+            const exportObj = { config: this.data, artifacts: artifacts, exportDate: new Date().toISOString() };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `backup_calculadora_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            return { success: true, message: 'Datos exportados correctamente.' };
+        } catch (e) { return { success: false, message: 'Error al exportar datos.' }; }
+    },
+    importData(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const importedObj = JSON.parse(event.target.result);
+                    if (!importedObj.config || !importedObj.artifacts) throw new Error("Formato inválido.");
+                    localStorage.setItem(App.Constants.LS_KEYS.CONFIG, JSON.stringify(importedObj.config));
+                    localStorage.setItem(App.Constants.LS_KEYS.ARTIFACTS, JSON.stringify(importedObj.artifacts));
+                    this.data = importedObj.config;
+                    resolve({ success: true, message: 'Datos importados. Recargando...' });
+                } catch (e) { reject({ success: false, message: 'Error: ' + e.message }); }
+            };
+            reader.readAsText(file);
+        });
     }
+};
 
-    // Establecer la fecha actual en el campo de fecha actual (en la pestaña de facturas)
-    const fechaActualInput = document.getElementById('fecha-actual');
-    if (fechaActualInput) {
-        const hoy = new Date().toISOString().split('T')[0];
-        fechaActualInput.value = hoy;
+// --- Módulo de Utilidades (Con Hashing) ---
+App.Utils = {
+    formatNumber(num, decimals = 2) {
+        return num.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    },
+    calculateTarifaResidencial(kwh) {
+        if (kwh < 200) return 'TR1';
+        if (kwh >= 200 && kwh < 500) return 'TR2';
+        return 'TR3';
+    },
+    calculateTarifaComercial(dacKva) {
+        if (dacKva <= 10) return 'G01';
+        if (dacKva > 10 && dacKva < 30) return 'G02';
+        return 'G03';
+    },
+    calculateCostos({ consumoKwhMes, dacKva }) {
+        const cfg = App.Config.data;
+        const costoPorConsumoUsd = consumoKwhMes * cfg.costoKwh;
+        const costoIvaUsd = costoPorConsumoUsd * (cfg.ivaPorcentaje / 100);
+        const costoPorDemandaUsd = dacKva * cfg.costoKva;
+        const costoTotalUsd = costoPorConsumoUsd + costoIvaUsd + costoPorDemandaUsd;
+        const costoTotalBs = costoTotalUsd * cfg.valorDolar;
+        return {
+            costoPorConsumoUsd: costoPorConsumoUsd.toFixed(2),
+            costoIvaUsd: costoIvaUsd.toFixed(2),
+            costoPorDemandaUsd: costoPorDemandaUsd.toFixed(2),
+            costoTotalUsd: costoTotalUsd.toFixed(2),
+            costoTotalBs: costoTotalBs.toFixed(2)
+        };
+    },
+    // Función Criptográfica SHA-256
+    async hashPassword(password) {
+        const msgBuffer = new TextEncoder().encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
     }
+};
+
+// --- Módulo de Autenticación (Asíncrono) ---
+App.Auth = {
+    users: [],
+    currentUser: null,
+
+    init() {
+        this.loadUsers();
+        this.checkSession();
+    },
+
+    loadUsers() {
+        const raw = localStorage.getItem(App.Constants.LS_KEYS.USERS);
+        if (raw) {
+            this.users = JSON.parse(raw);
+        } else {
+            // Usuario por defecto
+            this.users = [{
+                username: 'admin',
+                password: 'admin123', 
+                isActive: true,
+                permissions: { consumo: true, corrientes: true, facturas: true, configuracion: true }
+            }];
+            this.saveUsers();
+        }
+    },
+
+    saveUsers() {
+        localStorage.setItem(App.Constants.LS_KEYS.USERS, JSON.stringify(this.users));
+    },
+
+    checkSession() {
+        const savedUser = localStorage.getItem(App.Constants.LS_KEYS.CURRENT_USER);
+        const isAuthenticated = localStorage.getItem(App.Constants.LS_KEYS.AUTH) === 'true';
+        if (isAuthenticated && savedUser) {
+            this.currentUser = JSON.parse(savedUser);
+        } else {
+            this.currentUser = null;
+        }
+    },
+
+    // LOGIN ACTUALIZADO: Soporta migración de texto plano a Hash
+    async login(username, password) {
+        this.loadUsers();
+        const user = this.users.find(u => u.username === username);
+        
+        if (user) {
+            if (!user.isActive) return { success: false, message: 'Cuenta inactiva.' };
+            
+            const isStoredHash = user.password.length === 64; 
+            
+            if (isStoredHash) {
+                // Comparar Hash con Hash
+                const inputHash = await App.Utils.hashPassword(password);
+                if (user.password === inputHash) {
+                    this.createSession(user);
+                    return { success: true };
+                }
+            } else {
+                // Compatibilidad: Si la contraseña guardada es vieja (texto plano)
+                if (user.password === password) {
+                    // Actualizar a Hash inmediatamente para protegerla
+                    user.password = await App.Utils.hashPassword(password);
+                    this.saveUsers();
+                    this.createSession(user);
+                    return { success: true };
+                }
+            }
+        }
+        return { success: false, message: 'Credenciales incorrectas.' };
+    },
+
+    createSession(user) {
+        this.currentUser = user;
+        localStorage.setItem(App.Constants.LS_KEYS.CURRENT_USER, JSON.stringify(user));
+        localStorage.setItem(App.Constants.LS_KEYS.AUTH, 'true');
+    },
+
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem(App.Constants.LS_KEYS.CURRENT_USER);
+        localStorage.removeItem(App.Constants.LS_KEYS.AUTH);
+    },
+
+    isAdmin() {
+        return this.currentUser && (this.currentUser.username === 'admin' || this.currentUser.role === 'admin');
+    },
+
+    hasPermission(moduleId) {
+        if (!this.currentUser) return false;
+        if (this.isAdmin()) return true;
+        if (moduleId === 'configuracion') return false;
+        return this.currentUser.permissions && this.currentUser.permissions[moduleId];
+    }
+};
+
+// --- Módulo UI ---
+App.UI = {
+    init() {
+        this.setupTabs();
+        this.setupConfigEvents();
+        this.setupDataEvents();
+    },
+    setupTabs() {
+        document.querySelectorAll('.pestana-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tabId = e.target.dataset.pestana;
+                if (App.Auth.hasPermission(tabId)) {
+                    this.activateTab(tabId);
+                } else {
+                    alert('Acceso denegado.');
+                    if (App.Auth.hasPermission('consumo')) this.activateTab('consumo');
+                }
+                const dropdown = document.getElementById('user-dropdown-content');
+                if (dropdown) dropdown.classList.remove('show');
+            });
+        });
+    },
+    activateTab(tabId) {
+        // Limpieza crítica para evitar conflictos de CSS
+        document.querySelectorAll('.pestana-btn').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.contenido-pestana').forEach(el => {
+            el.classList.remove('active');
+            el.style.display = ''; // IMPORTANTE: Resetea estilos inline
+        });
+        
+        const btn = document.querySelector(`.pestana-btn[data-pestana="${tabId}"]`);
+        const content = document.getElementById(tabId);
+        
+        if (btn) btn.classList.add('active');
+        if (content) {
+            content.classList.add('active');
+            // Recargar lista de usuarios si estamos en config
+            if (tabId === 'configuracion' && typeof window.renderUsersList === 'function') {
+                window.renderUsersList();
+            }
+        }
+    },
+    setupConfigEvents() {
+        const btnGuardar = document.getElementById('guardar-configuracion');
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', () => {
+                if (App.Config.updateFromDOM()) this.showMessage('mensaje-configuracion', 'Guardado.', 'green');
+            });
+        }
+    },
+    setupDataEvents() {
+        const btnExport = document.getElementById('btn-exportar-datos');
+        if (btnExport) {
+            btnExport.addEventListener('click', () => {
+                const res = App.Config.exportData();
+                this.showMessage('mensaje-import-export', res.message, res.success ? 'green' : 'red');
+            });
+        }
+        const inputImport = document.getElementById('import-file-input');
+        if (inputImport) {
+            inputImport.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (confirm("¿Sobrescribir datos?")) {
+                    App.Config.importData(file).then(res => {
+                        this.showMessage('mensaje-import-export', res.message, 'green');
+                        setTimeout(() => window.location.reload(), 1500);
+                    }).catch(err => this.showMessage('mensaje-import-export', err.message, 'red'));
+                } else { e.target.value = ''; }
+            });
+        }
+    },
+    showMessage(elementId, msg, color) {
+        const el = document.getElementById(elementId);
+        if (el) { el.textContent = msg; el.style.color = color; setTimeout(() => el.textContent = '', 4000); }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    App.Config.init();
+    App.Auth.init();
+    App.Config.loadToDOM();
+    App.UI.init();
 });

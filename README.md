@@ -1,2 +1,2 @@
-# calc-estm-ener
-web para la estimación del consumo de energía
+# calculadora
+calculadora para estimacion de consumo de energia

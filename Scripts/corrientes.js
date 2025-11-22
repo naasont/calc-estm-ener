@@ -1,144 +1,155 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Agregar evento al botón limpiar
-    document.getElementById('boton-limpiar-corrientes').addEventListener('click', limpiarCamposCorrientes);
+(function(App) {
+    'use strict';
 
-    // Agregar evento al botón calcular
-    document.getElementById('boton-calcular-corrientes').addEventListener('click', calcularPorCorrientes);
-});
+    function limpiarCamposCorrientes() {
+        // Restablecer valores de voltaje
+        document.getElementById('voltaje-r').value = 120;
+        document.getElementById('voltaje-s').value = 120;
+        document.getElementById('voltaje-t').value = 120;
 
-function limpiarCamposCorrientes() {
-    // Restablecer valores de voltaje
-    document.getElementById('voltaje-r').value = 120;
-    document.getElementById('voltaje-s').value = 120;
-    document.getElementById('voltaje-t').value = 120;
+        // Limpiar campos de corriente
+        document.getElementById('corriente-r').value = '';
+        document.getElementById('corriente-s').value = '';
+        document.getElementById('corriente-t').value = '';
 
-    // Limpiar campos de corriente
-    document.getElementById('corriente-r').value = '';
-    document.getElementById('corriente-s').value = '';
-    document.getElementById('corriente-t').value = '';
+        // Ocultar y limpiar resultados
+        const resultadoDiv = document.getElementById('resultado-corrientes');
+        resultadoDiv.classList.add('oculto');
+        resultadoDiv.innerHTML = '';
+        document.getElementById('boton-limpiar-corrientes').style.display = 'none';
+    }
 
-    // Restablecer otros campos a sus valores predeterminados o los de la configuración global
-    // Los parámetros globales (horas, días, costos) se manejan desde Configuración General (appConfig)
+    function calcularPorCorrientes() {
+        const resultadoCorrientes = document.getElementById('resultado-corrientes');
+        resultadoCorrientes.innerHTML = ''; // Limpiar resultados previos
 
-    // Ocultar y limpiar resultados
-    document.getElementById('resultado-corrientes').classList.add('oculto');
-    document.getElementById('resultado-corrientes').innerHTML = '';
-    document.getElementById('boton-limpiar-corrientes').style.display = 'none';
-}
+        const inputs = {
+            vr: parseFloat(document.getElementById('voltaje-r').value) || 0,
+            vs: parseFloat(document.getElementById('voltaje-s').value) || 0,
+            vt: parseFloat(document.getElementById('voltaje-t').value) || 0,
+            ir: parseFloat(document.getElementById('corriente-r').value) || 0,
+            is: parseFloat(document.getElementById('corriente-s').value) || 0,
+            it: parseFloat(document.getElementById('corriente-t').value) || 0,
+        };
 
-function calcularPorCorrientes() {
-    const config = {
-        vr: parseFloat(document.getElementById('voltaje-r').value) || 0,
-        vs: parseFloat(document.getElementById('voltaje-s').value) || 0,
-        vt: parseFloat(document.getElementById('voltaje-t').value) || 0,
-        ir: parseFloat(document.getElementById('corriente-r').value) || 0,
-        is: parseFloat(document.getElementById('corriente-s').value) || 0,
-        it: parseFloat(document.getElementById('corriente-t').value) || 0,
-        // Tomar valores globales desde appConfig (configuración general)
-        horas: (typeof appConfig.horasMes !== 'undefined') ? parseFloat(appConfig.horasMes) : 300,
-        dias: (typeof appConfig.diasMes !== 'undefined') ? parseFloat(appConfig.diasMes) : 30,
-        costoKva: (typeof appConfig.costoKva !== 'undefined') ? parseFloat(appConfig.costoKva) : 1.30,
-        costoKwh: (typeof appConfig.costoKwh !== 'undefined') ? parseFloat(appConfig.costoKwh) : 0.01,
-        // Obtener IVA y Dólar de la configuración global
-        iva: appConfig.ivaPorcentaje,
-        dolar: appConfig.valorDolar
-    };
+        // Usar la configuración centralizada de App.Config
+        const config = App.Config.data;
 
-    // Cálculos técnicos
-    const potenciaAparente = (config.vr * config.ir + config.vs * config.is + config.vt * config.it) / 1000; // kVA
-    const potenciaActiva = potenciaAparente * 0.9; // 90% de la potencia aparente (asumiendo un factor de potencia)
-    const dac = Math.max(potenciaActiva, 1); // DAC mínimo 1 kVA
-    const ctc = dac <= 5 ? dac : dac / 0.4; // Cálculo de CTC basado en DAC
-    const consumoMensual = potenciaActiva * config.horas; // kWh
-    const consumoDiario = consumoMensual / config.dias;
+        // Validación: al menos un campo de corriente debe tener datos
+        if (inputs.ir === 0 && inputs.is === 0 && inputs.it === 0) {
+            resultadoCorrientes.innerHTML = `<p class="error-message">Debe ingresar un valor en al menos uno de los campos de corriente para poder calcular.</p>`;
+            resultadoCorrientes.classList.remove('oculto');
+            return;
+        }
 
-    // Cálculo de tarifas
-    const tarifaResidencial = calcularTarifaResidencial(consumoMensual);
-    const tarifaComercial = calcularTarifaComercial(dac);
+        // Cálculos técnicos
+        const potenciaAparenteKva = (inputs.vr * inputs.ir + inputs.vs * inputs.is + inputs.vt * inputs.it) / 1000;
+        const potenciaActivaKw = potenciaAparenteKva * config.fpReferencia; // Usar FP de referencia de la config
+        const dacKva = Math.max(potenciaActivaKw, 1);
+        const ctcKva = dacKva <= 5 ? dacKva : dacKva / 0.4;
+        const consumoKwhMes = potenciaActivaKw * config.horasMes;
+        const consumoKwhDia = consumoKwhMes / config.diasMes;
 
-    // Cálculos financieros
-    const costos = calcularCostos({
-        consumoMensual,
-        dac,
-        costoKwh: config.costoKwh,
-        costoKva: config.costoKva,
-        iva: config.iva,
-        dolar: config.dolar
-    });
+        // Usar utilidades de App.Utils
+        const tarifaResidencial = App.Utils.calculateTarifaResidencial(consumoKwhMes);
+        const tarifaComercial = App.Utils.calculateTarifaComercial(dacKva);
 
-    // Mostrar resultados
-    const resultados = `
-    <div class="contenedor-resultados">
-        <!-- Caja 1 - Potencia -->
-        <div class="caja-resultado">
-            <h3 class="titulo-caja">Potencia</h3>
-            <div class="item-resultado">
-                <span class="etiqueta">Aparente Total (DAC):</span>
-                <span class="valor">${formatoNumero(potenciaAparente)} kVA</span>
-            </div>
-            <div class="item-resultado">
-                <span class="etiqueta">Activa Total:</span>
-                <span class="valor">${formatoNumero(potenciaActiva)} kW</span>
-            </div>
-            <div class="item-resultado">
-                <span class="etiqueta">Tarifa Residencial:</span>
-                <span class="valor">${tarifaResidencial}</span>
-            </div>
-            <div class="item-resultado">
-                <span class="etiqueta">Tarifa Comercial:</span>
-                <span class="valor">${tarifaComercial}</span>
-            </div>
-        </div>
+        const costos = App.Utils.calculateCostos({
+            consumoKwhMes: consumoKwhMes,
+            dacKva: dacKva
+        });
 
-        <!-- Caja 2 - Parámetros -->
-        <div class="caja-resultado">
-            <h3 class="titulo-caja">Parámetros</h3>
-            <div class="item-resultado">
-                <span class="etiqueta">CTC:</span>
-                <span class="valor">${ctc.toFixed()} kVA</span>
-            </div>
-            <div class="item-resultado">
-                <span class="etiqueta">DAC:</span>
-                <span class="valor">${dac.toFixed()} kVA</span>
-            </div>
-            <div class="item-resultado">
-                <span class="etiqueta">Consumo Mensual:</span>
-                <span class="valor-destacado">${consumoMensual.toFixed()} kWh/mes</span>
-            </div>
-            <div class="item-resultado">
-                <span class="etiqueta">Consumo Diario:</span>
-                <span class="valor-destacado">${formatoNumero(consumoDiario)} kWh/dia</span>
-            </div>
-        </div>
+        // --- Construcción segura del DOM de resultados ---
+        const contenedorResultados = document.createElement('div');
+        contenedorResultados.className = 'contenedor-resultados';
 
-        <!-- Caja 3 - Costos -->
-        <div class="caja-resultado">
-            <h3 class="titulo-caja">Costos</h3>
-            <div class="item-resultado">
-                <span class="etiqueta">Por Demanda DAC:</span>
-                <span class="valor">$${costos.demanda}</span>
-            </div>
-            <div class="item-resultado">
-                <span class="etiqueta">Por Kwh:</span>
-                <span class="valor">$${costos.consumoBase}</span>
-            </div>
-            <div class="item-resultado">
-                <span class="etiqueta">IVA (${config.iva}%):</span>
-                <span class="valor">$${costos.ivaTotal}</span>
-            </div>
-            <div class="item-resultado-total">
-                <span class="etiqueta-total">Total USD:</span>
-                <span class="valor-total">$${costos.totalUSD}</span>
-            </div>
-            <div class="item-resultado-total">
-                <span class="etiqueta-total">Total Bs:</span>
-                <span class="valor-total">${costos.totalBS} Bs</span>
-            </div>
-        </div>
-    </div>
-    `;
+        function createResultItem(label, value, valueClass = 'valor') {
+            const p = document.createElement('p');
+            p.className = 'item-resultado';
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'etiqueta';
+            labelSpan.textContent = label;
+            const valueSpan = document.createElement('span');
+            valueSpan.className = valueClass;
+            valueSpan.textContent = value;
+            p.appendChild(labelSpan);
+            p.appendChild(valueSpan);
+            return p;
+        }
 
-    document.getElementById('resultado-corrientes').innerHTML = resultados;
-    document.getElementById('resultado-corrientes').classList.remove('oculto');
-    document.getElementById('boton-limpiar-corrientes').style.display = 'inline-block';
-}
+        function createTotalResultItem(label, value, valueClass = 'valor-total') {
+            const p = document.createElement('p');
+            p.className = 'item-resultado-total';
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'etiqueta-total';
+            labelSpan.textContent = label;
+            const valueSpan = document.createElement('span');
+            valueSpan.className = valueClass;
+            valueSpan.textContent = value;
+            p.appendChild(labelSpan);
+            p.appendChild(valueSpan);
+            return p;
+        }
+
+        // Caja 1: Potencia
+        const cajaPotencia = document.createElement('div');
+        cajaPotencia.className = 'caja-resultado';
+        const tituloPotencia = document.createElement('h3');
+        tituloPotencia.className = 'titulo-caja';
+        tituloPotencia.textContent = 'Potencia y Tarifas';
+        cajaPotencia.appendChild(tituloPotencia);
+        cajaPotencia.appendChild(createResultItem('Aparente Total:', `${App.Utils.formatNumber(potenciaAparenteKva)} kVA`));
+        cajaPotencia.appendChild(createResultItem('Activa Total:', `${App.Utils.formatNumber(potenciaActivaKw)} kW`));
+        cajaPotencia.appendChild(createResultItem('Tarifa Residencial:', tarifaResidencial, 'valor valor-tarifa'));
+        cajaPotencia.appendChild(createResultItem('Tarifa Comercial:', tarifaComercial, 'valor valor-tarifa'));
+        contenedorResultados.appendChild(cajaPotencia);
+
+        // Caja 2: Parámetros
+        const cajaParametros = document.createElement('div');
+        cajaParametros.className = 'caja-resultado';
+        const tituloParametros = document.createElement('h3');
+        tituloParametros.className = 'titulo-caja';
+        tituloParametros.textContent = 'Parámetros Técnicos';
+        cajaParametros.appendChild(tituloParametros);
+        cajaParametros.appendChild(createResultItem('CTC:', `${ctcKva.toFixed(0)} kVA`));
+        cajaParametros.appendChild(createResultItem('DAC:', `${dacKva.toFixed(0)} kVA`));
+        cajaParametros.appendChild(createResultItem('Consumo Mensual:', `${consumoKwhMes.toFixed(0)} kWh/mes`, 'valor-destacado'));
+        cajaParametros.appendChild(createResultItem('Consumo Diario:', `${App.Utils.formatNumber(consumoKwhDia)} kWh/día`, 'valor-destacado'));
+        contenedorResultados.appendChild(cajaParametros);
+
+        // Caja 3: Costos
+        const cajaCostos = document.createElement('div');
+        cajaCostos.className = 'caja-resultado';
+        const tituloCostos = document.createElement('h3');
+        tituloCostos.className = 'titulo-caja';
+        tituloCostos.textContent = 'Detalles de Costos';
+        cajaCostos.appendChild(tituloCostos);
+        cajaCostos.appendChild(createResultItem('Por Demanda DAC:', `$${costos.costoPorDemandaUsd}`));
+        cajaCostos.appendChild(createResultItem('Por Kwh:', `$${costos.costoPorConsumoUsd}`));
+        cajaCostos.appendChild(createResultItem(`IVA (${config.ivaPorcentaje}%):`, `$${costos.costoIvaUsd}`));
+        cajaCostos.appendChild(createTotalResultItem('Por mes $ (USD):', `$${costos.costoTotalUsd}`));
+        cajaCostos.appendChild(createTotalResultItem('Por mes (Bs):', `${costos.costoTotalBs} Bs`));
+        contenedorResultados.appendChild(cajaCostos);
+
+        // Añadir todo al contenedor principal de resultados
+        resultadoCorrientes.appendChild(contenedorResultados);
+        resultadoCorrientes.classList.remove('oculto');
+        document.getElementById('boton-limpiar-corrientes').style.display = 'inline-block';
+    }
+
+    function init() {
+        const btnLimpiar = document.getElementById('boton-limpiar-corrientes');
+        const btnCalcular = document.getElementById('boton-calcular-corrientes');
+
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener('click', limpiarCamposCorrientes);
+        }
+        if (btnCalcular) {
+            btnCalcular.addEventListener('click', calcularPorCorrientes);
+        }
+    }
+
+    // Inicializar al cargar el DOM
+    document.addEventListener('DOMContentLoaded', init);
+
+})(window.App);

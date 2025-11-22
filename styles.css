@@ -30,6 +30,11 @@ body {
     transition: all 0.3s ease;
 }
 
+/* Estilo para el cursor de espera */
+body.wait-cursor, body.wait-cursor * {
+    cursor: wait !important;
+}
+
 .pestana-btn.active {
     background-color: #fff;
     border-bottom-color: #fff;
@@ -135,8 +140,8 @@ body {
 
 label {
     min-width: 180px;
-    font-weight: 600;
-    color: #4a4a4a;
+    font-weight: 600; /* Aumenta el grosor para mejor legibilidad */
+    color: #333; /* Color más oscuro para mayor contraste */
 }
 
 .input-config {
@@ -146,10 +151,18 @@ label {
     border-radius: 4px;
     transition: border-color 0.3s ease;
 }
+.input-config:focus,
+button:focus,
+select:focus,
+a:focus {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+}
 
-.input-config:focus {
-    border-color: #007bff;
-    outline: none;
+/* Usar :focus-visible para un foco más inteligente que no se activa con el ratón */
+:is(button, input, select, a):focus-visible {
+    outline: 3px solid #0056b3;
+    outline-offset: 2px;
 }
 
 button {
@@ -165,6 +178,18 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+.btn-importar {
+    display: inline-block;
+    padding: 10px 25px;
+    background-color: #17a2b8;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-importar:hover { background-color: #138496; }
 
 /* Resultados */
 .contenedor-resultados {
@@ -240,12 +265,17 @@ button:hover {
 }
 
 .valor {
-    color: #000080;
+    color: #0d47a1; /* Azul oscuro para mejor contraste */
     font-weight: 600;
 }
 
 .valor-destacado {
-    color: #d63384;
+    color: #d63384; /* Magenta para valores de consumo clave */
+    font-weight: 700;
+}
+
+.valor-tarifa {
+    color: #dc3545; /* Rojo para destacar las tarifas */
     font-weight: 700;
 }
 
@@ -259,7 +289,7 @@ button:hover {
 }
 
 .valor-total {
-    color: #2a9d8f;
+    color: #198754; /* Verde oscuro para totales de costos */
     font-weight: 700;
     font-size: 1.1em;
 }
@@ -386,50 +416,58 @@ button:hover {
     position: relative;
     display: inline-block;
 }
+
 /* Modal de confirmación */
 .confirm-modal {
     position: fixed;
     inset: 0;
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(0,0,0,0.45);
-    z-index: 9999;
 }
 
-.confirm-modal-content {
+.confirm-modal__card {
     background: #fff;
-    padding: 20px 22px;
+    padding: 25px 30px;
     border-radius: 8px;
     max-width: 520px;
     width: 90%;
     box-shadow: 0 8px 24px rgba(0,0,0,0.25);
     text-align: center;
+    animation: fadeIn 0.2s ease-out;
 }
 
-.confirm-modal-message {
-    margin-bottom: 18px;
+.confirm-modal__card p {
+    margin: 0 0 20px 0;
     color: #333;
     font-weight: 600;
+    font-size: 1.1em;
 }
 
-.confirm-modal-actions {
+.confirm-modal__card .confirm-modal__actions {
     display: flex;
     gap: 10px;
     justify-content: center;
-}
-
-.btn {
-    padding: 8px 14px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
 }
 
 .btn-primary { background: #007bff; color: #fff; }
 .btn-primary:hover { background: #0069d9; }
 .btn-secondary { background: #6c757d; color: #fff; }
 .btn-secondary:hover { background: #5a6268; }
+
+/* Evita el scroll del body cuando el modal está abierto */
+body.modal-open {
+    overflow: hidden;
+}
+
+#confirm-modal-cancel {
+    background-color: #6c757d;
+}
+#confirm-modal-cancel:hover {
+    background-color: #5a6268;
+}
 
 .dropdown-toggle-btn {
     padding: 10px 15px;
@@ -542,10 +580,6 @@ button:hover {
 }
 .user-item .delete-user-btn:hover {
     background-color: #c82333;
-}
-
-.success-message {
-    color: green;
 }
 
 /* ========= ESTILOS MODAL DE ARTEFACTOS ========= */
@@ -702,3 +736,284 @@ button:hover {
 #tabla-artefactos .btn-edit { background-color: #ffc107; border: none; color: black; }
 #tabla-artefactos .btn-duplicate { background-color: #17a2b8; border: none; color: white; }
 #tabla-artefactos .btn-delete { background-color: #dc3545; border: none; color: white; }
+
+/* ========= ESTILOS MODAL DE ARTEFACTOS ========= */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 1200px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+    color: black;
+}
+
+#modal-artefactos-titulo {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.artefactos-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.artefactos-form {
+    flex: 1;
+    min-width: 300px;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.artefactos-tabla-container {
+    flex: 2;
+    min-width: 400px;
+    overflow-x: auto;
+}
+
+#form-artefactos .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+#form-artefactos .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+#form-artefactos label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+#form-artefactos input,
+#form-artefactos select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#form-artefactos .error-msg {
+    color: #dc3545;
+    font-size: 0.8em;
+    height: 1em;
+    margin-top: 4px;
+}
+
+#form-artefactos .form-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+#tabla-artefactos {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#tabla-artefactos th,
+#tabla-artefactos td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#tabla-artefactos th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+#tabla-artefactos tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#tabla-artefactos tr:hover {
+    background-color: #f1f1f1;
+}
+
+#tabla-artefactos .btn-edit,
+#tabla-artefactos .btn-duplicate,
+#tabla-artefactos .btn-delete {
+    padding: 5px 8px;
+    font-size: 0.85em;
+    margin-right: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#tabla-artefactos .btn-edit { background-color: #ffc107; border: none; color: black; }
+#tabla-artefactos .btn-duplicate { background-color: #17a2b8; border: none; color: white; }
+#tabla-artefactos .btn-delete { background-color: #dc3545; border: none; color: white; }
+
+/* ==========================================================================
+   Media Queries para Diseño Responsivo
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    body {
+        margin: 10px;
+    }
+
+    .pestanas {
+        flex-wrap: wrap; /* Permite que las pestañas pasen a la siguiente línea */
+    }
+
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .grupo-input,
+    .artefactos-container {
+        flex-direction: column; /* Apila los elementos verticalmente */
+    }
+
+    .input-config {
+        width: 100%; /* Ocupa todo el ancho disponible */
+        box-sizing: border-box;
+    }
+
+    .contenedor-resultados {
+        grid-template-columns: 1fr; /* Una sola columna para las cajas de resultados */
+    }
+
+    .caja-resultado {
+        max-width: 100%;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 15px;
+    }
+
+    #form-artefactos .form-grid {
+        grid-template-columns: 1fr; /* Apila los campos del formulario de artefactos */
+    }
+
+    /* Para tablas que pueden ser muy anchas */
+    .artefactos-tabla-container,
+    #user-management-container {
+        overflow-x: auto; /* Permite scroll horizontal en la tabla */
+    }
+
+    /* Ocultar cabecera de la lista de usuarios y mostrar etiquetas si es necesario */
+    .user-list-header {
+        display: none;
+    }
+
+    .user-item {
+        grid-template-columns: 1fr 1fr; /* Reorganiza la grilla de usuarios */
+        gap: 15px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+    .user-item span {
+        grid-column: 1 / -1; /* El nombre de usuario ocupa toda la primera fila */
+        font-weight: bold;
+    }
+}
+
+/* ==========================================================================
+   Estilos de Impresión
+   ========================================================================== */
+
+@media print {
+    body {
+        background-color: #fff;
+        color: #000;
+        font-size: 12pt;
+    }
+
+    /* Ocultar elementos no deseados */
+    .top-bar, .pestanas, button, .modal, .login-box, .dropdown-menu-container, .fact-tab-buttons {
+        display: none !important;
+    }
+
+    /* Mostrar solo el contenido activo */
+    .contenido-pestana {
+        display: none !important;
+    }
+    .contenido-pestana.active {
+        display: block !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Asegurar que el contenido de las sub-pestañas de facturación sea visible al imprimir */
+    .fact-tab-content {
+        display: block !important;
+    }
+
+    /* Estilos para el contenido a imprimir */
+    .contenedor-resultados, .caja-resultado {
+        display: block !important; /* Asegura que no haya columnas */
+        box-shadow: none !important;
+        border: 1px solid #ccc;
+        page-break-inside: avoid; /* Evita que las cajas se corten entre páginas */
+    }
+
+    table, #tabla-artefactos {
+        width: 100%;
+        border-collapse: collapse;
+        page-break-inside: auto;
+    }
+
+    tr, td, th {
+        page-break-inside: avoid;
+    }
+
+    a {
+        text-decoration: none;
+        color: #000;
+    }
+}

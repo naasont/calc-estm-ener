@@ -1,0 +1,1545 @@
+{
+  "config": {
+    "diasMes": 30,
+    "horasMes": 300,
+    "costoKwh": 0.011,
+    "costoKva": 1.87,
+    "ivaPorcentaje": 16,
+    "valorDolar": 240,
+    "version": 1,
+    "fpReferencia": 0.9
+  },
+  "artifacts": [
+    {
+      "nombre": "Bomba de agua 1/2HP",
+      "vatios": 350,
+      "factorPotencia": 0.85,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 115,
+      "id": "14b9a06e-c3ec-4742-a09e-e93ca0974912"
+    },
+    {
+      "nombre": "Bomba de agua 1HP",
+      "vatios": 750,
+      "factorPotencia": 0.85,
+      "horasDiarias": 1,
+      "fase": 1,
+      "voltaje": 115,
+      "id": "7b8be47f-9636-4820-b148-d6a44d056e52"
+    },
+    {
+      "id": "0f33478d-0f32-4192-a11f-148a262d04ab",
+      "nombre": "Aire acond. (AE) 10TR",
+      "vatios": 11000,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 3,
+      "voltaje": 115
+    },
+    {
+      "id": "2e619655-f80a-42b1-aeb7-8e5e4dbd6459",
+      "nombre": "Aire acond. (AE) 12.000 BTU",
+      "vatios": 1100,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "1e649dc4-d2e8-4315-ad52-739f7f0d1f10",
+      "nombre": "Aire acond. (ae) 15.000 BTU",
+      "vatios": 1375,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "ada13cc9-c958-4b84-8587-51e7b97390bc",
+      "nombre": "Aire acond. (AE) 18.000 BTU",
+      "vatios": 1650,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "a9c6a542-75b6-4868-8bd9-79ec37e32530",
+      "nombre": "Aire acond. (AE) 21.000 BTU",
+      "vatios": 1925,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "833e8d6b-f564-4589-b142-3c8360b70855",
+      "nombre": "Aire acond. (AE) 24.000 BTU",
+      "vatios": 2200,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "67d1453f-ffca-4d33-a9db-1a32f7dc60eb",
+      "nombre": "Aire acond. (AE) 3TR",
+      "vatios": 3300,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "2fae433c-7d88-4d0f-9dba-29a8117d0876",
+      "nombre": "Aire acond. (AE) 36.000 BTU",
+      "vatios": 3300,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "ce59386f-6a47-41eb-a985-2204bd0e7413",
+      "nombre": "Aire acond. (AE) 4TR",
+      "vatios": 4400,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "485ae009-9125-4cb3-95a8-3ae1507e75b6",
+      "nombre": "Aire acond. (AE) 5TR",
+      "vatios": 5500,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "e57c5a8e-8f03-4f6c-9877-d5ef05b63958",
+      "nombre": "Aire acond. (AE) 6.000 BTU",
+      "vatios": 550,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "d71f7ac5-53d5-42a3-8cd5-0795b48c2e95",
+      "nombre": "Aire acond. (AE) 8.000 BTU",
+      "vatios": 733,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "e54d1c6b-8793-4317-9e60-6a0e263fc9ad",
+      "nombre": "Aire acond. (AE) 9.000 BTU",
+      "vatios": 825,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 220
+    },
+    {
+      "id": "b6a44808-9388-402b-8b8c-d128845c00a6",
+      "nombre": "Aire acond. (BE) 10TR",
+      "vatios": 13000,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 3,
+      "voltaje": 208
+    },
+    {
+      "id": "3e05ae00-8b11-4956-8562-64e368831736",
+      "nombre": "Aire acond. (BE) 12.000 BTU",
+      "vatios": 1300,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "8e0f7feb-5174-492e-953a-2a4e12200507",
+      "nombre": "Aire acond. (BE) 13.000 BTU",
+      "vatios": 1411,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "9de8553e-6eae-4359-9382-9cd64e045663",
+      "nombre": "Aire acond. (BE) 15.000 BTU",
+      "vatios": 1625,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "2b89aeb4-879a-47de-a25c-2a2e22b15ffe",
+      "nombre": "Aire acond. (BE) 18.000 BTU",
+      "vatios": 1950,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "3934c75b-438b-457f-a7ab-47ce789b5a1c",
+      "nombre": "Aire acond. (BE) 2TR",
+      "vatios": 2600,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "d1ed6904-6231-40c5-be2c-fa05e4c3ec0e",
+      "nombre": "Aire acond. (BE) 21.000",
+      "vatios": 2275,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "3c49423b-b42d-4e27-aca7-c1bfbb4e568b",
+      "nombre": "Aire acond. (BE) 24.000 BTU",
+      "vatios": 2600,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "4e7a630f-1918-4668-867b-9e5557d26ccc",
+      "nombre": "Aire acond. (BE) 28.000 BTU",
+      "vatios": 3033,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "11b7635b-0c1c-48db-ab74-d22c42bc110b",
+      "nombre": "Aire acond. (BE) 3TR",
+      "vatios": 3900,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "686766a5-ed5c-40b3-8f53-fa0605119246",
+      "nombre": "Aire acond. (BE) 33.000 BTU",
+      "vatios": 3575,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "929acac2-a010-44df-aac1-14333cf493b9",
+      "nombre": "Aire acond. (BE) 36.000 BTU",
+      "vatios": 3900,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "ecd3f557-cebf-4e9e-a73c-7dc45a01511e",
+      "nombre": "Aire acond. (BE) 4TR",
+      "vatios": 5200,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "f786cc43-b0b8-47ce-94fd-6ad3e4c4dac6",
+      "nombre": "Aire acond. (BE) 5TR",
+      "vatios": 6500,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 208
+    },
+    {
+      "id": "b23db459-d23e-4f3c-8400-5bff39b9b1f2",
+      "nombre": "Aire acond. (BE) 9.000 BTU",
+      "vatios": 975,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 220
+    },
+    {
+      "id": "923ad77e-fe73-4eef-8bb7-13d4f45b621e",
+      "nombre": "Aire integ.   (AE) 15TR",
+      "vatios": 16500,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 3,
+      "voltaje": 220
+    },
+    {
+      "id": "c8ca65ef-6c3f-4c6a-bc54-1b00eb2948b6",
+      "nombre": "Asador  de  pollo",
+      "vatios": 725,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "6321a389-55d7-4e23-9106-23176f54cfe8",
+      "nombre": "Aspiradora",
+      "vatios": 540,
+      "factorPotencia": 0.9,
+      "horasDiarias": 0.4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "dd6d03d7-03c6-498f-8129-2273e4895f3f",
+      "nombre": "Balanceador de caucho de 10\" a 24\"",
+      "vatios": 250,
+      "factorPotencia": 0.8,
+      "horasDiarias": 5,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "f8d4872e-4b86-4f82-a091-da7761f12776",
+      "nombre": "Balanceador de caucho de 10\" a 24\" 0,2kw",
+      "vatios": 200,
+      "factorPotencia": 0.8,
+      "horasDiarias": 5,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "64a86907-67ab-444d-a8b4-0d60513e2610",
+      "nombre": "Balanceador de caucho de 10\" a 24\" 0,37 kw",
+      "vatios": 370,
+      "factorPotencia": 0.8,
+      "horasDiarias": 5,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "40aa285c-f685-43f6-a87f-04b8f6c391c3",
+      "nombre": "Balanceador de caucho de 10\" a 24\" 1 1/2 HP",
+      "vatios": 1119,
+      "factorPotencia": 0.8,
+      "horasDiarias": 5,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "d73ea9f0-0207-4451-91d1-a34b41f8358e",
+      "nombre": "Balanceador de caucho de 10\" a 26\" 1/4 HP",
+      "vatios": 188,
+      "factorPotencia": 0.8,
+      "horasDiarias": 5,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "d5113c93-07f0-47b5-a648-a67e81aa2fec",
+      "nombre": "Baño de maría",
+      "vatios": 2700,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "01732b51-f5aa-4e7d-a5ae-2572ec60dad3",
+      "nombre": "Batidora",
+      "vatios": 150,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "26a29140-51b5-4682-8ac8-ef230dc2f53f",
+      "nombre": "Bomba de agua 1 HP",
+      "vatios": 746,
+      "factorPotencia": 0.8,
+      "horasDiarias": 2,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "31fa36f9-335b-47bb-885f-91545f7c8f7d",
+      "nombre": "Bomba de agua 1/2 HP",
+      "vatios": 373,
+      "factorPotencia": 0.8,
+      "horasDiarias": 2,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "482c0288-0539-4432-8678-ae6fbe080a57",
+      "nombre": "Bomba de agua 2 HP",
+      "vatios": 1492,
+      "factorPotencia": 0.8,
+      "horasDiarias": 2,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "72ebd3fb-1f7b-4a1d-9f18-ce0c6ad6c5a5",
+      "nombre": "Bombillo 150W",
+      "vatios": 150,
+      "factorPotencia": 0.95,
+      "horasDiarias": 10,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "b33436e1-b0bb-4cae-bb21-bfdd89e9efa6",
+      "nombre": "Bombillo 18W",
+      "vatios": 18,
+      "factorPotencia": 0.95,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "a67471ad-9081-48dd-8331-5089e44a726f",
+      "nombre": "Bombillo 200W",
+      "vatios": 200,
+      "factorPotencia": 0.95,
+      "horasDiarias": 10,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "8583af24-1cfb-4134-8fad-92ef0a8d7532",
+      "nombre": "Bombillo 24W",
+      "vatios": 24,
+      "factorPotencia": 0.95,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "53cee5ce-975b-481f-a190-a994b4392983",
+      "nombre": "Bombillo 250W",
+      "vatios": 250,
+      "factorPotencia": 0.95,
+      "horasDiarias": 10,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "606475d0-7c9a-4e70-a1e0-23991d2fda1b",
+      "nombre": "Bombillo 32W",
+      "vatios": 32,
+      "factorPotencia": 0.95,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "a5fee0b6-e12b-4a05-87a2-b855a386e126",
+      "nombre": "Bombillo 40W",
+      "vatios": 40,
+      "factorPotencia": 0.95,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "8fbd5c7d-ed8d-4e74-82cc-2d1134830f99",
+      "nombre": "Bombillo 50W",
+      "vatios": 50,
+      "factorPotencia": 0.95,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "b09545f6-d7de-4603-b494-e63b032ef2f9",
+      "nombre": "Bombillo 6W",
+      "vatios": 6,
+      "factorPotencia": 0.95,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "8889107a-32bc-48c7-9155-7cfb6cdaee39",
+      "nombre": "Bombillo 75W",
+      "vatios": 75,
+      "factorPotencia": 0.95,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "48b944cd-60f1-465e-8f28-a31739ff8212",
+      "nombre": "Bombillo 8W",
+      "vatios": 8,
+      "factorPotencia": 0.95,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "7537e6b2-3fcd-4e07-8ddf-f1fd8370df0a",
+      "nombre": "Bordadora 1 cabeza 120v",
+      "vatios": 252,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "bd19f797-6047-43d2-8bef-fac73676f9d7",
+      "nombre": "Bordadora 1 cabeza 220v",
+      "vatios": 264,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "6c45a4f1-d41f-47ae-83c0-74d8749e27a6",
+      "nombre": "Cafetera comer. medi. promac",
+      "vatios": 2700,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "344c4052-4553-46dc-8bea-e5d74faa7f3b",
+      "nombre": "Cafetera comercial  grande",
+      "vatios": 3000,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "1e5a6998-61a1-481b-9860-963ed51f6407",
+      "nombre": "Cafetera electrica 4 tazas",
+      "vatios": 600,
+      "factorPotencia": 0.9,
+      "horasDiarias": 1,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "500b84aa-3770-4cc6-9d16-5e7729957b02",
+      "nombre": "Cafetera electrica 8 tazas",
+      "vatios": 900,
+      "factorPotencia": 0.9,
+      "horasDiarias": 1,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "e6e7776a-e5d7-4618-bd64-b57ed974ba77",
+      "nombre": "Caja registradora",
+      "vatios": 14,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "d01bf2c6-e925-414c-98a3-810a6fbdb5d7",
+      "nombre": "Campana extractora",
+      "vatios": 300,
+      "factorPotencia": 0.9,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 110
+    },
+    {
+      "id": "5eb6b80d-1332-4f29-93c6-6fa5d12af7f4",
+      "nombre": "Cargador de bateria",
+      "vatios": 40,
+      "factorPotencia": 0.9,
+      "horasDiarias": 2,
+      "fase": 1,
+      "voltaje": 110
+    },
+    {
+      "id": "652f8af4-91a5-4b08-9d7a-c5a411086919",
+      "nombre": "Cautin",
+      "vatios": 25,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "011ad8eb-87e6-4de8-ad76-7f563b9ab627",
+      "nombre": "Cautin",
+      "vatios": 60,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "e59b76ed-f3d5-43fe-8dd9-64d53ad8397b",
+      "nombre": "Cava cuarto 1 HP",
+      "vatios": 746,
+      "factorPotencia": 0.8,
+      "horasDiarias": 18,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "819c6d26-f28e-4efb-b449-11d7b8a7d4cb",
+      "nombre": "Cava cuarto 1,5 HP",
+      "vatios": 1119,
+      "factorPotencia": 0.8,
+      "horasDiarias": 18,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "f454edd5-fb90-4dad-b3ee-dc5e44445883",
+      "nombre": "Cava cuarto 2 HP",
+      "vatios": 1492,
+      "factorPotencia": 0.8,
+      "horasDiarias": 18,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "e3bb172b-6cc5-46a9-940e-9301a554328e",
+      "nombre": "Cava cuarto 2,5 HP",
+      "vatios": 1865,
+      "factorPotencia": 0.8,
+      "horasDiarias": 18,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "326924fb-5609-49be-bb9c-797edb66116a",
+      "nombre": "Cava cuarto 3 HP",
+      "vatios": 2238,
+      "factorPotencia": 0.8,
+      "horasDiarias": 18,
+      "fase": 3,
+      "voltaje": 208
+    },
+    {
+      "id": "6daa3082-0df6-4d49-80ec-3d7ca71875d3",
+      "nombre": "Cava cuarto 3,5 HP",
+      "vatios": 2611,
+      "factorPotencia": 0.8,
+      "horasDiarias": 18,
+      "fase": 2,
+      "voltaje": 208
+    },
+    {
+      "id": "bec1290f-569a-4504-828b-e6c874d277e8",
+      "nombre": "Cava cuarto 5 HP",
+      "vatios": 3730,
+      "factorPotencia": 0.8,
+      "horasDiarias": 18,
+      "fase": 3,
+      "voltaje": 220
+    },
+    {
+      "id": "11fcb41f-ec0c-4e92-bb39-ac37e279760e",
+      "nombre": "Cocina 2 hornillas",
+      "vatios": 2400,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "fbc49e98-b670-4232-aebe-3b2b5b9796d3",
+      "nombre": "Cocina 4 hornillas",
+      "vatios": 4500,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "890467fe-ede5-4476-b94c-f17e0be00253",
+      "nombre": "Computadora",
+      "vatios": 300,
+      "factorPotencia": 0.9,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "00b8389f-802f-40ec-988f-f8bc7b4dd3da",
+      "nombre": "Computadora gamer",
+      "vatios": 500,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "156a64e1-342b-4d78-93d2-a88c741fa352",
+      "nombre": "Congelador convencional 1 tapa (100l)",
+      "vatios": 200,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "e648c37e-a166-4255-9014-c161f789ba05",
+      "nombre": "Congelador convencional 1 tapa (150l)",
+      "vatios": 250,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "b938733f-2be0-415b-9cab-dfbb9b39df5b",
+      "nombre": "Congelador convencional 1 tapa (200l)",
+      "vatios": 300,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "14ac28ad-b8b6-4086-9b16-58ec02ced8f2",
+      "nombre": "Congelador convencional 1 tapa (255l)",
+      "vatios": 350,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "a30ae07c-b0f5-4032-b656-b8affce03e83",
+      "nombre": "Congelador convencional 1 tapa (300l)",
+      "vatios": 400,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "ba17d71e-413e-41b7-a282-c803222d39b0",
+      "nombre": "Congelador convencional 1 tapa (420l)",
+      "vatios": 500,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "a0d3f1e7-2abb-49e2-ab07-887ee9a029a2",
+      "nombre": "Congelador convencional 2 tapas (420l)",
+      "vatios": 600,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "f90e2886-b553-4de6-ba73-69f6bf0dce1e",
+      "nombre": "Congelador convencional 2 tapas (500l)",
+      "vatios": 700,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "3272e582-f2cc-41b5-9751-28c86b04606c",
+      "nombre": "Congelador convencional 2 tapas (650l)",
+      "vatios": 800,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "f1907ef7-4799-4d1d-abbc-057d077c9ace",
+      "nombre": "Congelador convencional 3 tapas (1200l)",
+      "vatios": 1500,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "bcb45af7-61df-4ec2-9c55-57c90013df3d",
+      "nombre": "Congelador mostrador 1 ventana (155l)",
+      "vatios": 300,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "e46a8fe9-1f8d-4670-a731-a8d39b1565da",
+      "nombre": "Congelador mostrador 2 ventanas (260l)",
+      "vatios": 400,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "191db3fc-114f-4211-9d71-16ed6ffb79ec",
+      "nombre": "Congelador mostrador 2 ventanas (300l)",
+      "vatios": 500,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "e86799e0-73ff-48a0-a4f5-0376fbb03209",
+      "nombre": "Congelador mostrador 2 ventanas (400l)",
+      "vatios": 600,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "0239babb-6913-464b-8375-44bd6b0dc6a3",
+      "nombre": "Congelador mostrador 2 ventanas (550l)",
+      "vatios": 800,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "431e4f4a-1ee5-4da7-b3a1-9f3811d55165",
+      "nombre": "Congelador mostrador 3 ventanas (766l)",
+      "vatios": 1200,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "86f00492-15a9-421f-bb4d-f8851253e523",
+      "nombre": "Cortina de  aire 250W",
+      "vatios": 1119,
+      "factorPotencia": 0.85,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 220
+    },
+    {
+      "id": "856de73d-c1bb-410d-b009-62b7cb4110b6",
+      "nombre": "Cortina de aire 120W",
+      "vatios": 250,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "f54a30dc-002e-440f-ba1d-a23687556d25",
+      "nombre": "Enfriador filtro de botellon",
+      "vatios": 90,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "010f7004-7114-4b2e-9616-10877ad276b9",
+      "nombre": "Enfriador mostrador curvo charcutero",
+      "vatios": 500,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "44fc8e69-cf83-4899-b046-4dc6d57b8e55",
+      "nombre": "Enfriador mostrador para helados",
+      "vatios": 600,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "d229c3ae-86ba-45a5-8d2b-0f6e5200216a",
+      "nombre": "Enfriador mostrador recto charcutero",
+      "vatios": 500,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "9b0bcfba-ef19-4049-b160-0f5792d323dc",
+      "nombre": "Enfriador perko  horizontal 2 tapas (355l)",
+      "vatios": 300,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "c51b0edd-da93-4254-9629-1577b722b8ce",
+      "nombre": "Enfriador perko  horizontal 3 tapas (580l)",
+      "vatios": 400,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "d9ede087-c222-4010-a6d5-d263bf5aa018",
+      "nombre": "Enfriador perko  vertical 230l",
+      "vatios": 200,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "5c45c4bf-03a0-4406-9fee-5ca8e731b920",
+      "nombre": "Enfriador perko horizontal 1 tapa",
+      "vatios": 250,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "a74356d1-4778-47e5-9b35-32fc153cb9fa",
+      "nombre": "Enfriador perko s vertical 530l",
+      "vatios": 350,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "ec4ad7c8-13b2-4dc5-93c0-ae8bbe31d643",
+      "nombre": "Enfriador vitrina vertical 1 puerta",
+      "vatios": 300,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "656351fc-cd6b-4a18-a5dc-3cd87dbf6147",
+      "nombre": "Enfriador vitrina vertical 2 puertas",
+      "vatios": 500,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "3f7cbbd5-4afc-44f9-bbbd-70aa4fdb502f",
+      "nombre": "Enfriador vitrina vertical 3 puertas",
+      "vatios": 700,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "ad0172b1-e6e4-4d79-8f91-f13fbda14cea",
+      "nombre": "Enfriador vitrina vertical 4 puertas",
+      "vatios": 800,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "da4e6910-5ceb-4bd5-955e-50214ee3fb65",
+      "nombre": "Enfriador vitrina vertical 6 puertas",
+      "vatios": 1200,
+      "factorPotencia": 0.8,
+      "horasDiarias": 14,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "479a7db4-c624-4800-802f-ed652afbc77b",
+      "nombre": "Equipo de sonido",
+      "vatios": 30,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "0391d7ea-4c02-40aa-9d88-20930b7b3115",
+      "nombre": "Esmeril",
+      "vatios": 1400,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "92f04fb3-c801-4f5f-97fa-e3626c438039",
+      "nombre": "Fotocopiadora",
+      "vatios": 700,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "47c93a2d-b661-429d-9cda-32266e06b59b",
+      "nombre": "Fotocopiadora grande",
+      "vatios": 1200,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "6783672b-ee16-4098-a5ff-a9a0793b8df5",
+      "nombre": "Freidora de aire",
+      "vatios": 450,
+      "factorPotencia": 0.8,
+      "horasDiarias": 12,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "9784c975-e0e2-4bc5-bc25-d17b6b297830",
+      "nombre": "Horno microonda  grande",
+      "vatios": 1200,
+      "factorPotencia": 0.9,
+      "horasDiarias": 1,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "485176db-f74d-464e-90cf-5ba45b2920f2",
+      "nombre": "Horno microonda  pequeño",
+      "vatios": 600,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "94baa5ee-1a8b-49ca-8a10-4441551cb86a",
+      "nombre": "Impresora grande",
+      "vatios": 500,
+      "factorPotencia": 0.85,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "2d6f62fe-8fd1-402c-8959-50da7305ef71",
+      "nombre": "Impresora pequeña",
+      "vatios": 50,
+      "factorPotencia": 0.85,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "65d5d275-1c6c-480f-a407-b494ccb71585",
+      "nombre": "Lavadora",
+      "vatios": 250,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "2f1e5b12-3ad1-4ba5-9d58-2d613d8e2f63",
+      "nombre": "Licuadora",
+      "vatios": 180,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "31cd3ac4-4e36-468c-92be-ee86b25074ed",
+      "nombre": "Máquina asadora de shawarma",
+      "vatios": 2000,
+      "factorPotencia": 1,
+      "horasDiarias": 10,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "d46f7fe0-37be-4628-9123-50f2115031b4",
+      "nombre": "Máquina de barquillas 1 sabor",
+      "vatios": 1000,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "f9054f10-5af7-4701-af11-28f3dcb26266",
+      "nombre": "Máquina de barquillas 2 sabores (frape)",
+      "vatios": 1200,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "de708ad4-1ece-4fef-951c-582fef63980a",
+      "nombre": "Máquina de barquillas 3 sabores",
+      "vatios": 1500,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "ab572b9c-6d15-40bf-b00b-e4ccdba0d958",
+      "nombre": "Máquina de conos de barquillas",
+      "vatios": 1000,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "e9437e87-2da5-47f1-bbf7-3efc6f61ddf9",
+      "nombre": "Maquina de coser",
+      "vatios": 150,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "2512ee9f-38f3-4fff-be09-a83d5bdde8f7",
+      "nombre": "Maquina de coser  grande",
+      "vatios": 550,
+      "factorPotencia": 0.85,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "9f11e55d-e03f-4b49-9e29-50c0179ee328",
+      "nombre": "Máquina de helado duro 20l",
+      "vatios": 800,
+      "factorPotencia": 0.85,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "db8ff88b-fbd8-4de6-bd6e-b10fd6a29f86",
+      "nombre": "Máquina de helado duro 25l",
+      "vatios": 1000,
+      "factorPotencia": 0.85,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "063b1193-9c9d-4687-85fb-2fa733e8557d",
+      "nombre": "Maquina de helado, grande",
+      "vatios": 2450,
+      "factorPotencia": 0.85,
+      "horasDiarias": 8,
+      "fase": 2,
+      "voltaje": 120
+    },
+    {
+      "id": "e6003912-f2d3-4a07-a2ff-0a414bc7de31",
+      "nombre": "Maquina de soldar  grande",
+      "vatios": 1100,
+      "factorPotencia": 0.85,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "cf987f1d-aef5-45f2-a1a7-416e4403f820",
+      "nombre": "Maquina de soldar  pequeña",
+      "vatios": 187,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "16ddc662-f261-4450-a9ba-9ab57824760a",
+      "nombre": "Máquina fabricadora de hielo 205 kg/día",
+      "vatios": 1550,
+      "factorPotencia": 0.85,
+      "horasDiarias": 18,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "99d58085-d50b-49f9-9938-a55b31029c6b",
+      "nombre": "Máquina fabricadora de hielo 60 kg/día",
+      "vatios": 650,
+      "factorPotencia": 0.85,
+      "horasDiarias": 18,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "08fcf704-4f39-4627-8375-49e003f8e811",
+      "nombre": "Molino   de   queso",
+      "vatios": 745,
+      "factorPotencia": 0.8,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "2526f0d1-4555-464e-bdc6-e9f5423f538f",
+      "nombre": "Molino de carne 1HP",
+      "vatios": 746,
+      "factorPotencia": 0.8,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 115
+    },
+    {
+      "id": "6141779c-796d-42e3-aa6a-47db3ce14691",
+      "nombre": "Nevera 11'- 13’(AE)",
+      "vatios": 130,
+      "factorPotencia": 0.9,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "2a79bafd-4d59-44af-9fcf-77f146219807",
+      "nombre": "Nevera 11’-13’ (BE)",
+      "vatios": 300,
+      "factorPotencia": 0.85,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "4bac45bb-5486-4f6b-bace-738724474cc6",
+      "nombre": "Nevera 14'-16' (AE)",
+      "vatios": 160,
+      "factorPotencia": 0.9,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "c024c323-2657-428c-81ed-3d1292f58727",
+      "nombre": "Nevera 14'-16’ (BE)",
+      "vatios": 400,
+      "factorPotencia": 0.85,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "0ba0c178-bcb8-4cb6-a400-527062bd2175",
+      "nombre": "Nevera 18 -22’ (BE)",
+      "vatios": 520,
+      "factorPotencia": 0.85,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "f475da23-f89c-4352-a3e3-e6e73360c6d9",
+      "nombre": "Nevera 18'-22’ (AE)",
+      "vatios": 180,
+      "factorPotencia": 0.9,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "a0661702-9e4e-4820-8476-e918d35ff7fe",
+      "nombre": "Nevera 8'",
+      "vatios": 120,
+      "factorPotencia": 0.8,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "07b45103-a4c7-430b-8f05-910470080b48",
+      "nombre": "Nevera comercial pequeña",
+      "vatios": 326,
+      "factorPotencia": 0.8,
+      "horasDiarias": 15,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "0de4ed83-9ab8-419f-8061-6951a9ea6a28",
+      "nombre": "Nevera ejecutiva",
+      "vatios": 80,
+      "factorPotencia": 0.8,
+      "horasDiarias": 5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "4eb20b02-d01b-43ce-9599-703a97318da3",
+      "nombre": "Nevera para refrescos 1 pta",
+      "vatios": 640,
+      "factorPotencia": 0.8,
+      "horasDiarias": 15,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "a2808af2-5356-4d1b-b7d5-173e47157a5d",
+      "nombre": "Nevera para refrescos 2 pta",
+      "vatios": 950,
+      "factorPotencia": 0.8,
+      "horasDiarias": 15,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "16d5e005-2905-4243-929c-525435fe11ac",
+      "nombre": "Nevera para refrescos 3 pta",
+      "vatios": 1340,
+      "factorPotencia": 0.8,
+      "horasDiarias": 15,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "112f5951-8132-4b70-ac20-8c6aefab76dd",
+      "nombre": "Peso  electronico",
+      "vatios": 1000,
+      "factorPotencia": 0.95,
+      "horasDiarias": 1,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "e99a88eb-2c42-4928-9054-9ed2e1c39696",
+      "nombre": "Plancha",
+      "vatios": 400,
+      "factorPotencia": 0.9,
+      "horasDiarias": 2,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "912779eb-1c7d-46ff-8051-4368875fd46e",
+      "nombre": "Plancha  de  cabello",
+      "vatios": 100,
+      "factorPotencia": 0.9,
+      "horasDiarias": 4,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "86f704db-19a5-4da4-834d-22682d63f625",
+      "nombre": "Radio",
+      "vatios": 186,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "62217b20-d6a4-4659-9313-a6eabecc93d3",
+      "nombre": "Rebanadora comercial",
+      "vatios": 250,
+      "factorPotencia": 0.9,
+      "horasDiarias": 1.5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "8dcd94b0-ee12-4a37-8c35-54bf00677d9d",
+      "nombre": "Secador de pelo comercial",
+      "vatios": 1500,
+      "factorPotencia": 0.9,
+      "horasDiarias": 1.5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "56d1a5c6-69eb-49aa-85e3-47eaa340047a",
+      "nombre": "Secador de pelo de pedes.",
+      "vatios": 250,
+      "factorPotencia": 0.9,
+      "horasDiarias": 1.5,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "489ff4da-7baf-44ff-a9d6-fbf162103837",
+      "nombre": "Secador de pelo domestico  pño.",
+      "vatios": 5300,
+      "factorPotencia": 0.8,
+      "horasDiarias": 2,
+      "fase": 2,
+      "voltaje": 120
+    },
+    {
+      "id": "07926fc1-307b-476e-b9f2-96dafdebc1a5",
+      "nombre": "Secadora de ropa",
+      "vatios": 746,
+      "factorPotencia": 0.8,
+      "horasDiarias": 2,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "7327dec9-41d9-47c4-9e60-90357523d2cd",
+      "nombre": "Sierra para carne  1 HP",
+      "vatios": 1500,
+      "factorPotencia": 0.9,
+      "horasDiarias": 2,
+      "fase": 1,
+      "voltaje": 115
+    },
+    {
+      "id": "c52207c9-3d94-4d57-95e8-0ca4ee778408",
+      "nombre": "Televisor 13\" '",
+      "vatios": 150,
+      "factorPotencia": 0.9,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "64d2acf6-1e73-4b51-8cc4-a8a99f0aca0a",
+      "nombre": "Televisor 20\" '",
+      "vatios": 152,
+      "factorPotencia": 0.9,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "1e70abfb-e28b-47cd-8692-56144ef0603a",
+      "nombre": "Televisor 27\" '",
+      "vatios": 155,
+      "factorPotencia": 0.9,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "4e567b92-e477-4801-a3ac-57bb6c1939df",
+      "nombre": "Televisor 29\" '",
+      "vatios": 120,
+      "factorPotencia": 0.9,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "54125f26-0b4f-45ab-aca2-53054dd59d25",
+      "nombre": "Televisor 32\" '",
+      "vatios": 140,
+      "factorPotencia": 0.9,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "f4a18914-a348-4490-93cb-80dec5df503c",
+      "nombre": "Televisor 42\" '",
+      "vatios": 160,
+      "factorPotencia": 0.9,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "9cb75513-5b2b-4877-bf84-b1e5d4216a83",
+      "nombre": "Televisor 50\" '",
+      "vatios": 180,
+      "factorPotencia": 0.9,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "555e1d8f-2adf-49d9-a670-ea9c836ef803",
+      "nombre": "Televisor 55\" '",
+      "vatios": 1400,
+      "factorPotencia": 0.9,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "06919b9b-cdce-4086-82e2-504dd04ff248",
+      "nombre": "Tostador de arepa",
+      "vatios": 150,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "9c517897-0a7c-42e9-9645-30ae48b368f3",
+      "nombre": "Ventilador de mesa pequeño",
+      "vatios": 60,
+      "factorPotencia": 0.8,
+      "horasDiarias": 8,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "37c4a110-0b65-41e9-a736-bc0f4ce78ade",
+      "nombre": "Ventilador de pie grande",
+      "vatios": 150,
+      "factorPotencia": 0.8,
+      "horasDiarias": 9,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "83609421-4c34-4980-a111-3a5353e3b47a",
+      "nombre": "Ventilador de pie pequeño",
+      "vatios": 70,
+      "factorPotencia": 0.8,
+      "horasDiarias": 9,
+      "fase": 1,
+      "voltaje": 120
+    },
+    {
+      "id": "5ecaeba9-f6f0-4b7c-b2ad-be19ef087341",
+      "nombre": "Ventilador de techo",
+      "vatios": 250,
+      "factorPotencia": 0.8,
+      "horasDiarias": 6,
+      "fase": 1,
+      "voltaje": 120
+    }
+  ],
+  "exportDate": "2025-11-22T02:33:46.366Z"
+}
