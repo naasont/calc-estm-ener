@@ -1,355 +1,368 @@
-// =================================================================================
-// Módulo de Censo de Carga (Consumo)
-// =================================================================================
+/**
+ * =================================================================================
+ * App Core - common.js
+ * (Versión Final Consolidada: Seguridad, Excel, Configuración)
+ * =================================================================================
+ */
 
 window.App = window.App || {};
 
-App.Consumo = (function(window, $) {
-    'use strict';
-
-    // --- Estado Interno del Módulo ---
-    let aparatos = []; // Catálogo para autocompletado
-    let aparatosMap = new Map(); // Índice para búsqueda rápida
-    let aparatosSeleccionados = []; // Dispositivos seleccionados por el usuario
-    let estadoConsumo = {}; // Resultados del último cálculo para exportación
-
-    // --- Funciones de Utilidad Internas ---
-
-    /**
-     * Convierte un texto SVG en una imagen DataURL (PNG) usando un canvas.
-     * Es asíncrono y devuelve una promesa.
-     * @param {string} svgText El contenido de texto del archivo SVG.
-     * @returns {Promise<string|null>}
-     */
-    function svgToPngDataURL(svgText) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
-            const url = URL.createObjectURL(svgBlob);
-
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const scale = 2; // Mejor calidad en PDF
-                canvas.width = img.width * scale;
-                canvas.height = img.height * scale;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                const dataUrl = canvas.toDataURL('image/png');
-                URL.revokeObjectURL(url);
-                resolve(dataUrl);
-            };
-
-            img.onerror = () => {
-                console.warn("Error al procesar el SVG en una imagen.");
-                URL.revokeObjectURL(url);
-                resolve(null);
-            };
-
-            img.src = url;
-        });
-    }
-
-    /**
-     * Genera un reporte en PDF del censo de carga.
-     */
-    async function exportarAPDF() {
-        if (!window.jspdf || !window.jspdf.jsPDF) {
-            throw new Error("La librería jsPDF no está cargada.");
-        }
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        let logoDataUrl = null;
-        try {
-            const response = await fetch('logo/logo.svg');
-            if (response.ok) {
-                logoDataUrl = await svgToPngDataURL(await response.text());
-            } else {
-                console.warn(`Advertencia: No se encontró el logo en 'logo/logo.svg' (Estado: ${response.status}).`);
-            }
-        } catch (error) {
-            console.warn("Advertencia: No se pudo cargar el logo para el PDF. Se generará sin él.", error);
-        }
-
-        const diasMes = App.Config.data.diasMes || 30;
-        const currentUser = App.Auth.currentUser; // Usar la nueva arquitectura
-        const fecha = new Date();
-        const fechaFormateada = `${fecha.getDate().toString().padStart(2, '0')}/${(fecha.getMonth() + 1).toString().padStart(2, '0')}/${fecha.getFullYear()}`;
-        const nombreArchivo = `Censo-Carga-${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}-${fecha.getDate().toString().padStart(2, '0')}.pdf`;
-
-        if (logoDataUrl) {
-            doc.addImage(logoDataUrl, 'PNG', 14, 15, 30, 15);
-        }
-
-        doc.setFontSize(20);
-        doc.text('Reporte de Censo de Carga', 105, 25, { align: 'center' });
-        doc.setFontSize(10);
-        doc.text(`Generado por: ${currentUser ? currentUser.username : 'N/A'}`, 14, 35);
-        doc.text(`Fecha: ${fechaFormateada}`, 196, 35, { align: 'right' });
-
-        const head = [['Dispositivo', 'Potencia\n(W)', 'FP', 'Cant.', 'H/D', 'Cons. Diario\n(kWh)', 'Cons. Mensual\n(kWh)']];
-        const body = aparatosSeleccionados.map(a => {
-            const potenciaTotal = (a.vatios || 0) * (a.cantidad || 0);
-            const consumoDiario = (potenciaTotal * (a.horasDiarias || 0)) / (a.factorPotencia || 0.9) / 1000;
-            const consumoMensual = consumoDiario * diasMes;
-            return [
-                a.nombre,
-                potenciaTotal.toFixed(2),
-                (a.factorPotencia || 0.9).toFixed(2),
-                a.cantidad,
-                (a.horasDiarias || 0).toFixed(2),
-                consumoDiario.toFixed(2),
-                consumoMensual.toFixed(2)
-            ];
-        });
-
-        const totalPotencia = body.reduce((sum, row) => sum + parseFloat(row[1]), 0);
-        const totalCantidad = body.reduce((sum, row) => sum + parseInt(row[3], 10), 0);
-        const totalConsumoDiario = body.reduce((sum, row) => sum + parseFloat(row[5]), 0);
-        const totalConsumoMensual = body.reduce((sum, row) => sum + parseFloat(row[6]), 0);
-        const foot = [['TOTAL', totalPotencia.toFixed(2), '', totalCantidad, '', totalConsumoDiario.toFixed(2), totalConsumoMensual.toFixed(2)]];
-
-        doc.autoTable({
-            head, body, foot, startY: 45, margin: { top: 40 },
-            styles: { halign: 'center', valign: 'middle' },
-            headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
-            footStyles: { fillColor: [236, 240, 241], textColor: 44, fontStyle: 'bold' },
-            columnStyles: { 0: { halign: 'left' } },
-            didParseCell: data => {
-                if (data.section === 'foot' && data.column.index === 0) data.cell.styles.halign = 'right';
-            }
-        });
-
-        doc.save(nombreArchivo);
-    }
-
-    function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-        };
-    }
-
-    // --- Lógica del DOM y Autocompletado ---
-
-    function configurarAutocompletado() {
-        $("#lista-aparatos").autocomplete({
-            source: aparatos.map(a => ({
-                label: `${a.nombre} (${a.vatios}W, ${a.voltaje}V)`,
-                value: a.nombre
-            })),
-            minLength: 2,
-            delay: 250,
-            focus: (e, ui) => {
-                e.preventDefault();
-                $(e.target).val(ui.item.label);
-            },
-            select: (e, ui) => {
-                e.preventDefault();
-                const dispositivo = aparatosMap.get(ui.item.value);
-                if (dispositivo) agregarDispositivo(dispositivo);
-                $(e.target).val('');
-            }
-        });
-    }
-
-    function agregarDispositivo(dispositivo) {
-        const existente = aparatosSeleccionados.find(a => a.nombre === dispositivo.nombre);
-        if (existente) {
-            existente.cantidad++;
-        } else {
-            aparatosSeleccionados.push({ ...dispositivo, cantidad: 1 });
-        }
-        actualizarInterfaz();
-    }
-
-    function limpiarTodo() {
-        aparatosSeleccionados = [];
-        estadoConsumo = {};
-        actualizarInterfaz();
-        $('#lista-aparatos').val('');
-        $('#exportar-pdf').addClass('oculto');
-        $('#resultado').empty();
-        $('#boton-limpiar').hide();
-    }
-
-    function actualizarInterfaz() {
-        const contenedor = $('#items-seleccionados').empty();
-        const diasMes = App.Config.data.diasMes;
-
-        aparatosSeleccionados.forEach((aparato, indice) => {
-            const consumo = (aparato.vatios * aparato.cantidad * aparato.horasDiarias * diasMes) / aparato.factorPotencia / 1000;
-            const fila = $(`
-                <div class="fila-item" data-indice="${indice}">
-                    <div><strong>${aparato.nombre}</strong></div>
-                    <div class="consumo-detalle">${aparato.vatios}W × ${aparato.cantidad} und × ${aparato.horasDiarias}h/día × FP ${aparato.factorPotencia}</div>
-                    <div style="margin-top: 10px;">
-                        <label for="cantidad-${indice}">Cantidad:</label>
-                        <input type="number" value="${aparato.cantidad}" id="cantidad-${indice}" class="input-cantidad" min="1">
-                        <label for="horas-${indice}">Horas/Día:</label>
-                        <input type="number" value="${aparato.horasDiarias.toFixed(1)}" id="horas-${indice}" class="input-horas" step="0.1" min="0">
-                        <button class="boton-remover" style="background: #dc3545;">Eliminar</button>
-                    </div>
-                    <div style="margin-top: 5px; color: #d63384;">
-                        Consumo mensual: <strong class="consumo-item">${consumo.toFixed(2)} kWh</strong>
-                    </div>
-                </div>
-            `);
-            contenedor.append(fila);
-        });
-
-        const debouncedUpdate = debounce(function() {
-            const fila = $(this).closest('.fila-item');
-            const indice = fila.data('indice');
-            const aparato = aparatosSeleccionados[indice];
-
-            if ($(this).hasClass('input-cantidad')) {
-                aparato.cantidad = Math.max(parseInt(this.value, 10) || 1, 1);
-            } else {
-                aparato.horasDiarias = Math.max(parseFloat(this.value) || 0, 0);
-            }
-
-            const nuevoConsumo = (aparato.vatios * aparato.cantidad * aparato.horasDiarias * diasMes) / aparato.factorPotencia / 1000;
-            fila.find('.consumo-item').text(`${nuevoConsumo.toFixed(2)} kWh`);
-            fila.find('.consumo-detalle').text(`${aparato.vatios}W × ${aparato.cantidad} und × ${aparato.horasDiarias}h/día × FP ${aparato.factorPotencia}`);
-        }, 250);
-
-        $('.input-cantidad, .input-horas').on('input', debouncedUpdate);
-
-        $('.boton-remover').on('click', function() {
-            const indice = $(this).closest('.fila-item').data('indice');
-            aparatosSeleccionados.splice(indice, 1);
-            actualizarInterfaz();
-        });
-
-        $('#boton-calcular').toggleClass('oculto', aparatosSeleccionados.length === 0);
-        $('#boton-limpiar').toggle(aparatosSeleccionados.length > 0);
-    }
-
-    // --- Lógica Principal de Cálculo ---
-
-    function calcularConsumo() {
-        const config = App.Config.data;
-        let potenciaActivaKwTotal = 0, consumoKwhMesTotal = 0, potenciaAparenteKvaTotal = 0;
-
-        aparatosSeleccionados.forEach(a => {
-            const watts = a.vatios * a.cantidad;
-            const horas = a.horasDiarias * config.diasMes;
-            potenciaActivaKwTotal += watts / 1000;
-            consumoKwhMesTotal += (watts * horas) / 1000 / a.factorPotencia;
-            potenciaAparenteKvaTotal += (watts / a.factorPotencia) / 1000;
-        });
-
-        const ctcKva = Math.max(potenciaAparenteKvaTotal, 1);
-        const dacKva = ctcKva <= 5 ? ctcKva : Math.max(ctcKva * 0.4, 5);
-
-        const costos = App.Utils.calculateCostos({
-            consumoKwhMes: consumoKwhMesTotal,
-            dacKva: dacKva
-        });
-
-        const tarifaResidencial = App.Utils.calculateTarifaResidencial(consumoKwhMesTotal);
-        const tarifaComercial = App.Utils.calculateTarifaComercial(dacKva);
-
-        estadoConsumo = {
-            ctcKva, dacKva,
-            consumoKwhMes: consumoKwhMesTotal,
-            consumoKwhDia: consumoKwhMesTotal / config.diasMes
-        };
-
-        const resultadoDiv = $('#resultado').empty().append('<h3>Resultados Finales</h3>');
-        const contenedorResultados = $('<div>').addClass('contenedor-resultados');
-
-        function createResultItem(label, value, valueClass = 'valor') {
-            return $('<p>').addClass('item-resultado').append($('<span>').addClass('etiqueta').text(label)).append($('<span>').addClass(valueClass).text(value));
-        }
-        function createTotalResultItem(label, value) {
-            return $('<p>').addClass('item-resultado-total').append($('<span>').addClass('etiqueta-total').text(label)).append($('<span>').addClass('valor-total').text(value));
-        }
-
-        contenedorResultados.append(
-            $('<div>').addClass('caja-resultado').append('<h4>Potencia y Tarifas</h4>').append(
-                $('<div>').addClass('consumo-detalle')
-                    .append(createResultItem('Aparente Total:', `${potenciaAparenteKvaTotal.toFixed(2)} kVA`))
-                    .append(createResultItem('Activa Total:', `${(potenciaActivaKwTotal * 1000).toLocaleString()} W`))
-                    .append(createResultItem('Tarifa Residencial:', tarifaResidencial, 'valor valor-tarifa'))
-                    .append(createResultItem('Tarifa Comercial:', tarifaComercial, 'valor valor-tarifa'))
-            ),
-            $('<div>').addClass('caja-resultado').append('<h4>Parámetros Técnicos</h4>').append(
-                $('<div>').addClass('consumo-detalle')
-                    .append(createResultItem('CTC:', `${estadoConsumo.ctcKva.toFixed(0)} kVA`))
-                    .append(createResultItem('DAC:', `${estadoConsumo.dacKva.toFixed(0)} kVA`))
-                    .append(createResultItem('Consumo Mensual:', `${estadoConsumo.consumoKwhMes.toFixed(0)} kWh/mes`, 'valor-destacado'))
-                    .append(createResultItem('Consumo Diario:', `${estadoConsumo.consumoKwhDia.toFixed(2)} kWh/día`, 'valor-destacado'))
-            ),
-            $('<div>').addClass('caja-resultado').append('<h4>Detalles de Costos</h4>').append(
-                $('<div>').addClass('consumo-detalle')
-                    .append(createResultItem('Por Demanda DAC:', `$${costos.costoPorDemandaUsd}`))
-                    .append(createResultItem('Por Kwh:', `$${costos.costoPorConsumoUsd}`))
-                    .append(createResultItem(`IVA (${config.ivaPorcentaje}%):`, `$${costos.costoIvaUsd}`))
-                    .append(createTotalResultItem('Por mes $ (USD):', `$${costos.costoTotalUsd}`))
-                    .append(createTotalResultItem('Por mes (Bs):', `${costos.costoTotalBs} Bs`))
-            )
-        );
-
-        resultadoDiv.append(contenedorResultados);
-        $('#exportar-pdf').removeClass('oculto');
-    }
-
-    // --- Inicialización y API Pública ---
-
-    function init() {
-        $(document).on('click', '#exportar-pdf', async function() {
-            if (aparatosSeleccionados.length === 0) {
-                alert('Seleccione al menos un aparato antes de exportar.');
-                return;
-            }
-            const btn = $(this).prop('disabled', true).text('Generando PDF...');
-            $('body').addClass('wait-cursor');
-            try {
-                await exportarAPDF();
-            } catch (error) {
-                console.error("Error fatal al generar el PDF:", error);
-                alert("Ocurrió un error al generar el PDF. Revise la consola.");
-            } finally {
-                btn.prop('disabled', false).text('Exportar PDF');
-                $('body').removeClass('wait-cursor');
-            }
-        });
-
-        $('#boton-limpiar').on('click', limpiarTodo);
-        $('#boton-calcular').on('click', calcularConsumo);
-    }
-
-    $(document).ready(init);
-
-    // API Pública del módulo
-    return {
-        /**
-         * Refresca el catálogo de autocompletado. Es llamado por artefactos.js.
-         * @param {Array} artifactsData - Datos de los artefactos.
-         */
-        refreshAutocomplete: function(artifactsData) {
-            aparatos = artifactsData.map(a => ({
-                nombre: a.value,
-                vatios: a.vatios,
-                factorPotencia: a.factorPotencia,
-                horasDiarias: a.horasDiarias,
-                fase: a.fase,
-                voltaje: a.voltaje
-            }));
-            aparatosMap = new Map(aparatos.map(a => [a.nombre, a]));
-            configurarAutocompletado();
-        }
-    };
-
-})(window, jQuery);
-
-// Exponer la función de refresco para que sea accesible desde artefactos.js
-// Esta es la única parte que necesita ser globalmente accesible para este módulo.
-window.refreshAutocompleteFromArtifacts = function(artifactsData) {
-    if (App.Consumo && App.Consumo.refreshAutocomplete) {
-        App.Consumo.refreshAutocomplete(artifactsData);
+App.Constants = {
+    LS_KEYS: {
+        USERS: 'app:users',
+        CURRENT_USER: 'app:currentUser',
+        AUTH: 'app:isAuthenticated',
+        CONFIG: 'app:config',
+        ARTIFACTS: 'app:artefactos',
+        MIGRATION: 'app:storageMigrated:v1'
+    },
+    DEFAULTS: {
+        diasMes: 30,
+        horasMes: 300,
+        costoKwh: 0.01,
+        costoKva: 1.30,
+        ivaPorcentaje: 16,
+        valorDolar: 65,
+        version: 1
     }
 };
+
+// --- Módulo de Configuración ---
+App.Config = {
+    data: {},
+    init() {
+        try {
+            const saved = localStorage.getItem(App.Constants.LS_KEYS.CONFIG);
+            if (saved) {
+                this.data = JSON.parse(saved);
+                if (!this.data.version || this.data.version < App.Constants.DEFAULTS.version) {
+                    this.data.version = App.Constants.DEFAULTS.version;
+                    this.save();
+                }
+            } else {
+                this.data = { ...App.Constants.DEFAULTS };
+                this.save();
+            }
+        } catch (e) {
+            console.error("Error cargando configuración:", e);
+            this.data = { ...App.Constants.DEFAULTS };
+        }
+        return this.data;
+    },
+    save() { localStorage.setItem(App.Constants.LS_KEYS.CONFIG, JSON.stringify(this.data)); },
+    updateFromDOM() {
+        const getVal = (id) => parseFloat(document.getElementById(id).value);
+        this.data.horasMes = getVal('horas-mes-config') || App.Constants.DEFAULTS.horasMes;
+        this.data.diasMes = getVal('dias-mes-config') || App.Constants.DEFAULTS.diasMes;
+        this.data.costoKva = getVal('costo-kva-config') || App.Constants.DEFAULTS.costoKva;
+        this.data.ivaPorcentaje = getVal('iva-porcentaje-config') || App.Constants.DEFAULTS.ivaPorcentaje;
+        this.data.valorDolar = getVal('valor-dolar-config') || App.Constants.DEFAULTS.valorDolar;
+        this.data.costoKwh = getVal('costo-kwh-config') || App.Constants.DEFAULTS.costoKwh;
+        this.save();
+        return true;
+    },
+    loadToDOM() {
+        if (!document.getElementById('horas-mes-config')) return;
+        document.getElementById('horas-mes-config').value = this.data.horasMes;
+        document.getElementById('dias-mes-config').value = this.data.diasMes;
+        document.getElementById('costo-kva-config').value = this.data.costoKva;
+        document.getElementById('iva-porcentaje-config').value = this.data.ivaPorcentaje;
+        document.getElementById('valor-dolar-config').value = this.data.valorDolar;
+        document.getElementById('costo-kwh-config').value = this.data.costoKwh;
+    },
+    exportData() {
+        try {
+            const artifacts = JSON.parse(localStorage.getItem(App.Constants.LS_KEYS.ARTIFACTS) || '[]');
+            const exportObj = { config: this.data, artifacts: artifacts, exportDate: new Date().toISOString() };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `backup_calculadora_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            return { success: true, message: 'Datos exportados correctamente.' };
+        } catch (e) { return { success: false, message: 'Error al exportar datos.' }; }
+    },
+    
+    // --- IMPORTACIÓN INTELIGENTE (Excel + JSON) ---
+    importData(file) {
+        return new Promise((resolve, reject) => {
+            const fileName = file.name.toLowerCase();
+            const reader = new FileReader();
+
+            // CASO 1: Excel (.xlsx, .xls, .csv)
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv')) {
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        if (typeof XLSX === 'undefined') throw new Error("La librería SheetJS (XLSX) no está cargada en index.html");
+                        
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                        let headerRowIndex = -1;
+                        for (let i = 0; i < rawData.length; i++) {
+                            const rowStr = JSON.stringify(rawData[i]).toUpperCase().replace(/\s/g, '');
+                            if (rowStr.includes("APARATO") || rowStr.includes("WATT")) {
+                                headerRowIndex = i;
+                                break;
+                            }
+                        }
+                        if (headerRowIndex === -1) { headerRowIndex = 0; }
+
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: headerRowIndex, defval: "" });
+                        if (jsonData.length === 0) throw new Error("Archivo vacío.");
+
+                        const currentArtifacts = JSON.parse(localStorage.getItem(App.Constants.LS_KEYS.ARTIFACTS) || '[]');
+                        
+                        const getValue = (row, keywords) => {
+                            const normalizedKeys = Object.keys(row).reduce((acc, key) => {
+                                acc[key.toUpperCase().replace(/\s+/g, '')] = key;
+                                return acc;
+                            }, {});
+                            for (let keyword of keywords) {
+                                const cleanKeyword = keyword.toUpperCase().replace(/\s+/g, '');
+                                const foundKey = Object.keys(normalizedKeys).find(k => k.includes(cleanKeyword));
+                                if (foundKey) return row[normalizedKeys[foundKey]];
+                            }
+                            return null;
+                        };
+
+                        const newArtifacts = jsonData.map(row => {
+                            const nombre = getValue(row, ['APARATOS', 'APARATO', 'NOMBRE', 'EQUIPO', 'DESCRIPCION']);
+                            if (!nombre) return null; 
+
+                            const parseSafeFloat = (val, def) => {
+                                if (typeof val === 'string') val = val.replace(',', '.');
+                                const num = parseFloat(val);
+                                return isNaN(num) ? def : num;
+                            };
+
+                            return {
+                                id: crypto.randomUUID(),
+                                nombre: String(nombre).trim(),
+                                vatios: parseSafeFloat(getValue(row, ['WATT', 'WATTS', 'POTENCIA']), 0),
+                                factorPotencia: parseSafeFloat(getValue(row, ['FP', 'FACTOR', 'F.P']), 0.9),
+                                horasDiarias: parseSafeFloat(getValue(row, ['H/D', 'HORAS', 'USO']), 0),
+                                fase: parseInt(parseSafeFloat(getValue(row, ['FASE', 'FASES']), 1)),
+                                voltaje: parseInt(parseSafeFloat(getValue(row, ['VOLTAJE', 'VOLT', 'TENSION']), 115))
+                            };
+                        }).filter(item => item !== null);
+
+                        if (newArtifacts.length === 0) throw new Error("No se pudieron extraer artefactos válidos.");
+
+                        localStorage.setItem(App.Constants.LS_KEYS.ARTIFACTS, JSON.stringify([...currentArtifacts, ...newArtifacts]));
+                        resolve({ success: true, message: `Éxito: Se agregaron ${newArtifacts.length} artefactos.` });
+
+                    } catch (err) { reject({ success: false, message: 'Error Excel: ' + err.message }); }
+                };
+                reader.readAsArrayBuffer(file);
+            } 
+            // CASO 2: JSON
+            else if (fileName.endsWith('.json')) {
+                reader.onload = (event) => {
+                    try {
+                        const importedObj = JSON.parse(event.target.result);
+                        if (!importedObj.config || !importedObj.artifacts) throw new Error("JSON inválido.");
+                        localStorage.setItem(App.Constants.LS_KEYS.CONFIG, JSON.stringify(importedObj.config));
+                        localStorage.setItem(App.Constants.LS_KEYS.ARTIFACTS, JSON.stringify(importedObj.artifacts));
+                        this.data = importedObj.config;
+                        resolve({ success: true, message: 'Respaldo restaurado.' });
+                    } catch (e) { reject({ success: false, message: 'Error JSON: ' + e.message }); }
+                };
+                reader.readAsText(file);
+            } else {
+                reject({ success: false, message: 'Formato no soportado.' });
+            }
+        });
+    }
+};
+
+// --- Módulo de Utilidades (Con Hashing) ---
+App.Utils = {
+    formatNumber(num, decimals = 2) {
+        return num.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    },
+    calculateTarifaResidencial(kwh) {
+        if (kwh < 200) return 'TR1';
+        if (kwh >= 200 && kwh < 500) return 'TR2';
+        return 'TR3';
+    },
+    calculateTarifaComercial(dacKva) {
+        if (dacKva <= 10) return 'G01';
+        if (dacKva > 10 && dacKva < 30) return 'G02';
+        return 'G03';
+    },
+    calculateCostos({ consumoKwhMes, dacKva }) {
+        const cfg = App.Config.data;
+        const costoPorConsumoUsd = consumoKwhMes * cfg.costoKwh;
+        const costoIvaUsd = costoPorConsumoUsd * (cfg.ivaPorcentaje / 100);
+        const costoPorDemandaUsd = dacKva * cfg.costoKva;
+        const costoTotalUsd = costoPorConsumoUsd + costoIvaUsd + costoPorDemandaUsd;
+        const costoTotalBs = costoTotalUsd * cfg.valorDolar;
+        return {
+            costoPorConsumoUsd: costoPorConsumoUsd.toFixed(2),
+            costoIvaUsd: costoIvaUsd.toFixed(2),
+            costoPorDemandaUsd: costoPorDemandaUsd.toFixed(2),
+            costoTotalUsd: costoTotalUsd.toFixed(2),
+            costoTotalBs: costoTotalBs.toFixed(2)
+        };
+    },
+    async hashPassword(password) {
+        const msgBuffer = new TextEncoder().encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+};
+
+// --- Módulo de Autenticación ---
+App.Auth = {
+    users: [],
+    currentUser: null,
+
+    init() { this.loadUsers(); this.checkSession(); },
+
+    loadUsers() {
+        const raw = localStorage.getItem(App.Constants.LS_KEYS.USERS);
+        if (raw) { this.users = JSON.parse(raw); } 
+        else {
+            this.users = [{
+                username: 'admin',
+                password: 'admin123', 
+                isActive: true,
+                permissions: { consumo: true, corrientes: true, facturas: true, configuracion: true }
+            }];
+            this.saveUsers();
+        }
+    },
+    saveUsers() { localStorage.setItem(App.Constants.LS_KEYS.USERS, JSON.stringify(this.users)); },
+    checkSession() {
+        const savedUser = localStorage.getItem(App.Constants.LS_KEYS.CURRENT_USER);
+        const isAuthenticated = localStorage.getItem(App.Constants.LS_KEYS.AUTH) === 'true';
+        if (isAuthenticated && savedUser) { this.currentUser = JSON.parse(savedUser); } 
+        else { this.currentUser = null; }
+    },
+    async login(username, password) {
+        this.loadUsers();
+        const user = this.users.find(u => u.username === username);
+        if (user) {
+            if (!user.isActive) return { success: false, message: 'Cuenta inactiva.' };
+            const isStoredHash = user.password.length === 64; 
+            if (isStoredHash) {
+                const inputHash = await App.Utils.hashPassword(password);
+                if (user.password === inputHash) { this.createSession(user); return { success: true }; }
+            } else {
+                if (user.password === password) {
+                    user.password = await App.Utils.hashPassword(password);
+                    this.saveUsers();
+                    this.createSession(user);
+                    return { success: true };
+                }
+            }
+        }
+        return { success: false, message: 'Credenciales incorrectas.' };
+    },
+    createSession(user) {
+        this.currentUser = user;
+        localStorage.setItem(App.Constants.LS_KEYS.CURRENT_USER, JSON.stringify(user));
+        localStorage.setItem(App.Constants.LS_KEYS.AUTH, 'true');
+    },
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem(App.Constants.LS_KEYS.CURRENT_USER);
+        localStorage.removeItem(App.Constants.LS_KEYS.AUTH);
+    },
+    isAdmin() { return this.currentUser && (this.currentUser.username === 'admin' || this.currentUser.role === 'admin'); },
+    hasPermission(moduleId) {
+        if (!this.currentUser) return false;
+        if (this.isAdmin()) return true;
+        if (moduleId === 'configuracion') return false;
+        return this.currentUser.permissions && this.currentUser.permissions[moduleId];
+    }
+};
+
+// --- Módulo UI ---
+App.UI = {
+    init() { this.setupTabs(); this.setupConfigEvents(); this.setupDataEvents(); },
+    setupTabs() {
+        document.querySelectorAll('.pestana-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tabId = e.target.dataset.pestana;
+                if (App.Auth.hasPermission(tabId)) { this.activateTab(tabId); } 
+                else { alert('Acceso denegado.'); if (App.Auth.hasPermission('consumo')) this.activateTab('consumo'); }
+                const dropdown = document.getElementById('user-dropdown-content');
+                if (dropdown) dropdown.classList.remove('show');
+            });
+        });
+    },
+    activateTab(tabId) {
+        document.querySelectorAll('.pestana-btn').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.contenido-pestana').forEach(el => { el.classList.remove('active'); el.style.display = ''; });
+        
+        const btn = document.querySelector(`.pestana-btn[data-pestana="${tabId}"]`);
+        const content = document.getElementById(tabId);
+        if (btn) btn.classList.add('active');
+        if (content) {
+            content.classList.add('active');
+            if (tabId === 'configuracion' && typeof window.renderUsersList === 'function') window.renderUsersList();
+        }
+    },
+    setupConfigEvents() {
+        const btnGuardar = document.getElementById('guardar-configuracion');
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', () => {
+                if (App.Config.updateFromDOM()) this.showMessage('mensaje-configuracion', 'Guardado.', 'green');
+            });
+        }
+    },
+    setupDataEvents() {
+        // Exportar
+        const btnExport = document.getElementById('btn-exportar-datos');
+        if (btnExport) {
+            btnExport.addEventListener('click', () => {
+                const res = App.Config.exportData();
+                this.showMessage('mensaje-import-export', res.message, res.success ? 'green' : 'red');
+            });
+        }
+        // Importar
+        const inputImport = document.getElementById('import-file-input');
+        if (inputImport) {
+            inputImport.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (confirm("¿Sobrescribir datos?")) {
+                    App.Config.importData(file).then(res => {
+                        this.showMessage('mensaje-import-export', res.message, 'green');
+                        setTimeout(() => window.location.reload(), 1500);
+                    }).catch(err => this.showMessage('mensaje-import-export', err.message, 'red'));
+                } else { e.target.value = ''; }
+            });
+        }
+        // Formatear
+        const btnFormatear = document.getElementById('btn-formatear-db');
+        if (btnFormatear) {
+            btnFormatear.addEventListener('click', () => {
+                if(confirm("⚠ ¿Borrar TODOS los datos y artefactos?")) {
+                    localStorage.removeItem(App.Constants.LS_KEYS.CONFIG);
+                    localStorage.removeItem(App.Constants.LS_KEYS.ARTIFACTS);
+                    window.location.reload();
+                }
+            });
+        }
+    },
+    showMessage(elementId, msg, color) {
+        const el = document.getElementById(elementId);
+        if (el) { el.textContent = msg; el.style.color = color; setTimeout(() => el.textContent = '', 4000); }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    App.Config.init();
+    App.Auth.init();
+    App.Config.loadToDOM();
+    App.UI.init();
+});
