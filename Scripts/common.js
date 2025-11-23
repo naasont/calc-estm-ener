@@ -20,20 +20,20 @@ App.Constants = {
     DEFAULTS: {
         diasMes: 30,
         horasMes: 300,
-        costoKwh: 0.01,
-        costoKva: 1.30,
+        costoKwh: 0.011,
+        costoKva: 1.87,
         ivaPorcentaje: 16,
-        valorDolar: 65,
+        valorDolar: 240,
         version: 1
     },
     ADMIN_HASH: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
     
-    // --- CONFIGURACIÓN FIREBASE (Reemplaza con tus datos reales) ---
+    // --- CONFIGURACIÓN FIREBASE ---
     FIREBASE_CONFIG: {
         apiKey: "AIzaSyDPSQyLGbg767iFfzjaNSNJcOQJOMMKWGQ",
         authDomain: "calculadora-energia-d9ba6.firebaseapp.com",
         projectId: "calculadora-energia-d9ba6",
-        storageBucket: "calculadora-energia-d9ba6.appspot.com",
+        storageBucket: "calculadora-energia-d9ba6.firebasestorage.app",
         messagingSenderId: "414769253348",
         appId: "1:414769253348:web:59e213cf9805b73e87d5f1"
     }

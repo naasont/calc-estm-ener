@@ -1,4 +1,4 @@
-﻿﻿﻿﻿(function(App) {
+﻿﻿﻿﻿﻿﻿(function(App) {
     'use strict';
 
     function mostrarError(mensaje) {
@@ -108,8 +108,7 @@
             <h3>Resultados de Facturación (CTC)</h3>
             <div class="contenedor-resultados">
                 <div class="caja-resultado">
-                    <h4 class="titulo-caja">Potencias y Tarifas</h4>
-                    <p class="item-resultado"><span class="etiqueta">Potencia Activa (DAC):</span><span class="valor">${dacKva.toFixed(0)} kW</span></p>
+                    <h4 class="titulo-caja">Tarifas</h4>
                     <p class="item-resultado"><span class="etiqueta">Tarifa Residencial:</span><span class="valor valor-tarifa">${tarifaResidencial}</span></p>
                     <p class="item-resultado"><span class="etiqueta">Tarifa Comercial:</span><span class="valor valor-tarifa">${tarifaComercial}</span></p>
                 </div>
@@ -207,8 +206,7 @@
             <h3>Resultados de Facturación por Fecha de Instalación</h3>
             <div class="contenedor-resultados">
                 <div class="caja-resultado">
-                    <h3 class="titulo-caja">Potencias y Tarifas</h3>
-                    <p class="item-resultado"><span class="etiqueta">Activa Total (DAC):</span><span class="valor">${dacKva.toFixed(0)} kW</span></p>
+                    <h3 class="titulo-caja">Tarifas</h3>
                     <p class="item-resultado"><span class="etiqueta">Tarifa Residencial:</span><span class="valor valor-tarifa">${App.Utils.calculateTarifaResidencial(consumoKwhMes)}</span></p>
                     <p class="item-resultado"><span class="etiqueta">Tarifa Comercial:</span><span class="valor valor-tarifa">${App.Utils.calculateTarifaComercial(dacKva)}</span></p>
                 </div>
