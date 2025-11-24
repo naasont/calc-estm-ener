@@ -111,15 +111,14 @@ App.Consumo = (function(window, $) {
         doc.text(`Generado por: ${currentUser ? currentUser.username : 'N/A'}`, 14, 35);
         doc.text(`Fecha: ${fechaFormateada}`, 196, 35, { align: 'right' });
 
-        const head = [['Dispositivo', 'Potencia\n(W)', 'FP', 'Cant.', 'H/D', 'Cons. Diario\n(kWh)', 'Cons. Mensual\n(kWh)']];
+        const head = [['Dispositivo', 'Potencia\n(W)', 'Cant.', 'H/D', 'Cons. Diario\n(kWh)', 'Cons. Mensual\n(kWh)']];
         const body = aparatosSeleccionados.map(a => {
             const potenciaTotal = (a.vatios || 0) * (a.cantidad || 0);
-            const consumoDiario = (potenciaTotal * (a.horasDiarias || 0)) / (a.factorPotencia || 0.9) / 1000;
+            const consumoDiario = (potenciaTotal * (a.horasDiarias || 0)) / 1000;
             const consumoMensual = consumoDiario * diasMes;
             return [
                 a.nombre,
                 potenciaTotal.toFixed(2),
-                (a.factorPotencia || 0.9).toFixed(2),
                 a.cantidad,
                 (a.horasDiarias || 0).toFixed(2),
                 consumoDiario.toFixed(2),
@@ -128,13 +127,13 @@ App.Consumo = (function(window, $) {
         });
 
         const totalPotencia = body.reduce((sum, row) => sum + parseFloat(row[1]), 0);
-        const totalCantidad = body.reduce((sum, row) => sum + parseInt(row[3], 10), 0);
-        const totalConsumoDiario = body.reduce((sum, row) => sum + parseFloat(row[5]), 0);
-        const totalConsumoMensual = body.reduce((sum, row) => sum + parseFloat(row[6]), 0);
-        const foot = [['TOTAL', totalPotencia.toFixed(2), '', totalCantidad, '', totalConsumoDiario.toFixed(2), totalConsumoMensual.toFixed(2)]];
+        const totalCantidad = body.reduce((sum, row) => sum + parseInt(row[2], 10), 0);
+        const totalConsumoDiario = body.reduce((sum, row) => sum + parseFloat(row[4]), 0);
+        const totalConsumoMensual = body.reduce((sum, row) => sum + parseFloat(row[5]), 0);
+        const foot = [['TOTAL', totalPotencia.toFixed(2), totalCantidad, '', totalConsumoDiario.toFixed(2), totalConsumoMensual.toFixed(2)]];
 
         doc.autoTable({
-            head, body, foot, startY: 45, margin: { top: 40 },
+            head, body, foot, startY: 45, margin: { top: 40 }, // Se eliminó la columna FP
             styles: { halign: 'center', valign: 'middle' },
             headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
             footStyles: { fillColor: [236, 240, 241], textColor: 44, fontStyle: 'bold' },
@@ -203,11 +202,11 @@ App.Consumo = (function(window, $) {
         const diasMes = App.Config.data.diasMes;
 
         aparatosSeleccionados.forEach((aparato, indice) => {
-            const consumo = (aparato.vatios * aparato.cantidad * aparato.horasDiarias * diasMes) / aparato.factorPotencia / 1000;
+            const consumo = (aparato.vatios * aparato.cantidad * aparato.horasDiarias * diasMes) / 1000;
             const fila = $(`
                 <div class="fila-item" data-indice="${indice}">
                     <div><strong>${aparato.nombre}</strong></div>
-                    <div class="consumo-detalle">${aparato.vatios}W × ${aparato.cantidad} und × ${aparato.horasDiarias}h/día × FP ${aparato.factorPotencia}</div>
+                    <div class="consumo-detalle">${aparato.vatios}W × ${aparato.cantidad} und × ${aparato.horasDiarias}h/día</div>
                     <div style="margin-top: 10px;">
                         <label for="cantidad-${indice}">Cantidad:</label>
                         <input type="number" value="${aparato.cantidad}" id="cantidad-${indice}" class="input-cantidad" min="1">
@@ -234,9 +233,9 @@ App.Consumo = (function(window, $) {
                 aparato.horasDiarias = Math.max(parseFloat(this.value) || 0, 0);
             }
 
-            const nuevoConsumo = (aparato.vatios * aparato.cantidad * aparato.horasDiarias * diasMes) / aparato.factorPotencia / 1000;
+            const nuevoConsumo = (aparato.vatios * aparato.cantidad * aparato.horasDiarias * diasMes) / 1000;
             fila.find('.consumo-item').text(`${nuevoConsumo.toFixed(2)} kWh`);
-            fila.find('.consumo-detalle').text(`${aparato.vatios}W × ${aparato.cantidad} und × ${aparato.horasDiarias}h/día × FP ${aparato.factorPotencia}`);
+            fila.find('.consumo-detalle').text(`${aparato.vatios}W × ${aparato.cantidad} und × ${aparato.horasDiarias}h/día`);
         }, 250);
 
         $('.input-cantidad, .input-horas').on('input', debouncedUpdate);
@@ -261,8 +260,8 @@ App.Consumo = (function(window, $) {
             const watts = a.vatios * a.cantidad;
             const horas = a.horasDiarias * config.diasMes;
             potenciaActivaKwTotal += watts / 1000;
-            consumoKwhMesTotal += (watts * horas) / 1000 / a.factorPotencia;
-            potenciaAparenteKvaTotal += (watts / a.factorPotencia) / 1000;
+            consumoKwhMesTotal += (watts * horas) / 1000;
+            potenciaAparenteKvaTotal += watts / 1000; // Ahora es igual a la potencia activa
         });
 
         const ctcKva = Math.max(potenciaAparenteKvaTotal, 1);
