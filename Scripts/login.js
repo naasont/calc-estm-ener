@@ -154,6 +154,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 
                                 // 3. Recargar Configuración
                                 App.Config.init();
+
+                                // 4. Forzar actualización del módulo de Consumo
+                                if (App.Consumo && typeof App.Consumo.refreshCatalog === 'function') {
+                                    App.Consumo.refreshCatalog();
+                                }
                             } else {
                                 alert("⚠ Advertencia: Hubo un error al intentar descargar de la nube. Se usarán los datos locales.\n\nDetalle: " + downloadResult.message);
                             }

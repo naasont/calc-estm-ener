@@ -1046,10 +1046,39 @@ label.btn-importar svg,
         align-items: flex-start;
     }
 
-    .grupo-input,
-    .artefactos-container {
-        flex-direction: column; /* Apila los elementos verticalmente */
+    .grupo-input {
+        flex-direction: column;
     }
+
+    /* --- MODAL MÓVIL: FLUJO NATURAL (Como el resto de la app) --- */
+
+    /* 1. El contenedor simplemente apila elementos uno tras otro */
+    .artefactos-container {
+        display: block;     /* No Flexbox complejo, solo bloque estándar */
+        height: auto;       /* Crece según el contenido */
+        overflow: visible;  /* Nada de ocultar contenido */
+        margin-bottom: 20px;
+    }
+
+    /* 2. El formulario ocupa su espacio natural */
+    .artefactos-form {
+        width: 100%;
+        margin-bottom: 20px; /* Separación visual antes de la tabla */
+        padding: 10px;
+        box-sizing: border-box;
+        /* Mantenemos el grid interno de 2 columnas para los inputs */
+    }
+
+    /* 3. La tabla se muestra completa hacia abajo */
+    .artefactos-tabla-container {
+        width: 100%;
+        height: auto;       /* La altura la definen las filas de la tabla */
+        max-height: none;   /* Eliminamos límites de altura */
+        overflow-y: visible;/* No queremos scroll interno vertical, sino usar el del modal */
+        overflow-x: auto;   /* Solo scroll horizontal si la tabla es muy ancha */
+        border: 1px solid #ddd;
+    }
+    
 
     .input-config {
         width: 100%; /* Ocupa todo el ancho disponible */
@@ -1064,9 +1093,12 @@ label.btn-importar svg,
         max-width: 100%;
     }
 
+    /* Asegurar que el modal permita el scroll largo */
     .modal-content {
-        width: 95%;
-        padding: 15px;
+        height: auto;           /* Altura dinámica */
+        max-height: 90vh;       /* Máximo 90% de la pantalla */
+        overflow-y: auto;       /* Scroll aquí si el contenido es muy largo */
+        padding: 10px;          /* Aprovechar espacio */
     }
 
     #form-artefactos .form-grid {
@@ -1074,7 +1106,6 @@ label.btn-importar svg,
     }
 
     /* Para tablas que pueden ser muy anchas */
-    .artefactos-tabla-container,
     #user-management-container {
         overflow-x: auto; /* Permite scroll horizontal en la tabla */
     }

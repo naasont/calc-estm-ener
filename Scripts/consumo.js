@@ -15,6 +15,30 @@ App.Consumo = (function(window, $) {
 
     // --- Funciones de Utilidad Internas ---
 
+    function cargarCatalogoDesdeStorage() {
+        const raw = localStorage.getItem(App.Constants.LS_KEYS.ARTIFACTS); // App.Constants.LS_KEYS.ARTIFACTS
+        if (raw) {
+            try {
+                const data = JSON.parse(raw);
+                // Mapeamos los datos al formato que usa Consumo
+                aparatos = data.map(a => ({
+                    nombre: a.nombre,
+                    vatios: a.vatios,
+                    factorPotencia: a.factorPotencia,
+                    horasDiarias: a.horasDiarias,
+                    fase: a.fase,
+                    voltaje: a.voltaje
+                }));
+                // Actualizamos los mapas internos y el plugin de autocompletado
+                aparatosMap = new Map(aparatos.map(a => [a.nombre, a]));
+                configurarAutocompletado();
+                console.log("Consumo: Catálogo recargado en caliente. Items:", aparatos.length);
+            } catch (e) {
+                console.error("Error recargando consumo:", e);
+            }
+        }
+    }
+
     /**
      * Convierte un texto SVG en una imagen DataURL (PNG) usando un canvas.
      * Es asíncrono y devuelve una promesa.
@@ -300,6 +324,8 @@ App.Consumo = (function(window, $) {
     // --- Inicialización y API Pública ---
 
     function init() {
+        cargarCatalogoDesdeStorage();
+
         $(document).on('click', '#exportar-pdf', async function() {
             if (aparatosSeleccionados.length === 0) {
                 alert('Seleccione al menos un aparato antes de exportar.');
@@ -330,26 +356,14 @@ App.Consumo = (function(window, $) {
          * Refresca el catálogo de autocompletado. Es llamado por artefactos.js.
          * @param {Array} artifactsData - Datos de los artefactos.
          */
-        refreshAutocomplete: function(artifactsData) {
-            aparatos = artifactsData.map(a => ({
-                nombre: a.value,
-                vatios: a.vatios,
-                factorPotencia: a.factorPotencia,
-                horasDiarias: a.horasDiarias,
-                fase: a.fase,
-                voltaje: a.voltaje
-            }));
-            aparatosMap = new Map(aparatos.map(a => [a.nombre, a]));
-            configurarAutocompletado();
+        refreshAutocomplete: function() {
+            // Mantenemos compatibilidad, pero preferimos la carga directa
+            cargarCatalogoDesdeStorage();
+        },
+        // Nueva función dedicada para llamadas externas
+        refreshCatalog: function() {
+            cargarCatalogoDesdeStorage();
         }
     };
 
 })(window, jQuery);
-
-// Exponer la función de refresco para que sea accesible desde artefactos.js
-// Esta es la única parte que necesita ser globalmente accesible para este módulo.
-window.refreshAutocompleteFromArtifacts = function(artifactsData) {
-    if (App.Consumo && App.Consumo.refreshAutocomplete) {
-        App.Consumo.refreshAutocomplete(artifactsData);
-    }
-};
