@@ -44,7 +44,9 @@
 
         // Cálculos técnicos
         const potenciaAparenteKva = (inputs.vr * inputs.ir + inputs.vs * inputs.is + inputs.vt * inputs.it) / 1000;
-        const potenciaActivaKw = potenciaAparenteKva * config.fpReferencia; // Usar FP de referencia de la config
+        // Validación de seguridad para FP
+        const fpRef = (config.fpReferencia !== undefined && config.fpReferencia !== null) ? config.fpReferencia : 0.9;
+        const potenciaActivaKw = potenciaAparenteKva * fpRef;
         const dacKva = Math.max(potenciaActivaKw, 1);
         const ctcKva = dacKva <= 5 ? dacKva : dacKva / 0.4;
         const consumoKwhMes = potenciaActivaKw * config.horasMes;
@@ -98,8 +100,8 @@
         tituloPotencia.className = 'titulo-caja';
         tituloPotencia.textContent = 'Potencia y Tarifas';
         cajaPotencia.appendChild(tituloPotencia);
-        cajaPotencia.appendChild(createResultItem('Aparente Total:', `${App.Utils.formatNumber(potenciaAparenteKva)} kVA`));
-        cajaPotencia.appendChild(createResultItem('Activa Total:', `${App.Utils.formatNumber(potenciaActivaKw)} kW`));
+        cajaPotencia.appendChild(createResultItem('Potencia Aparente:', `${App.Utils.formatNumber(potenciaAparenteKva)} kVA`));
+        cajaPotencia.appendChild(createResultItem('Potencia Activa:', `${App.Utils.formatNumber(potenciaActivaKw)} kW`));
         cajaPotencia.appendChild(createResultItem('Tarifa Residencial:', tarifaResidencial, 'valor valor-tarifa'));
         cajaPotencia.appendChild(createResultItem('Tarifa Comercial:', tarifaComercial, 'valor valor-tarifa'));
         contenedorResultados.appendChild(cajaPotencia);
