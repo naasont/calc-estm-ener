@@ -85,11 +85,11 @@ App.Consumo = (function(window, $) {
 
         let logoDataUrl = null;
         try {
-            const response = await fetch('logo/logo.svg');
+            const response = await fetch('Logo/logo.svg');
             if (response.ok) {
                 logoDataUrl = await svgToPngDataURL(await response.text());
             } else {
-                console.warn(`Advertencia: No se encontró el logo en 'logo/logo.svg' (Estado: ${response.status}).`);
+                console.warn(`Advertencia: No se encontró el logo en 'Logo/logo.svg' (Estado: ${response.status}).`);
             }
         } catch (error) {
             console.warn("Advertencia: No se pudo cargar el logo para el PDF. Se generará sin él.", error);
