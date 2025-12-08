@@ -370,36 +370,65 @@ App.Auth = {
     }
 };
 
-// --- Módulo UI ---
+// --- Módulo UI (ACTUALIZADO PARA NAVEGACIÓN MÓVIL) ---
 App.UI = {
     init() {
         this.setupTabs();
         this.setupConfigEvents();
         this.setupDataEvents();
     },
+    
     setupTabs() {
-        document.querySelectorAll('.pestana-btn').forEach(btn => {
+        // Seleccionamos tanto las pestañas de arriba (.pestana-btn) como las de abajo (.nav-item)
+        const allTabButtons = document.querySelectorAll('.pestana-btn, .nav-item');
+        
+        allTabButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const tabId = e.target.dataset.pestana;
-                if (App.Auth.hasPermission(tabId)) { this.activateTab(tabId); } 
-                else { alert('Acceso denegado.'); if (App.Auth.hasPermission('consumo')) this.activateTab('consumo'); }
+                // Buscamos el botón (por si el clic fue en el icono SVG interno)
+                const targetBtn = e.target.closest('button'); 
+                const tabId = targetBtn.dataset.pestana;
+
+                if (App.Auth.hasPermission(tabId)) { 
+                    this.activateTab(tabId); 
+                } else { 
+                    alert('Acceso denegado.'); 
+                    if (App.Auth.hasPermission('consumo')) this.activateTab('consumo'); 
+                }
+                
+                // Si el menú de usuario estaba abierto, cerrarlo
                 const dropdown = document.getElementById('user-dropdown-content');
                 if (dropdown) dropdown.classList.remove('show');
             });
         });
     },
+
     activateTab(tabId) {
-        document.querySelectorAll('.pestana-btn').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.contenido-pestana').forEach(el => { el.classList.remove('active'); el.style.display = 'none'; });
-        const btn = document.querySelector(`.pestana-btn[data-pestana="${tabId}"]`);
+        // 1. Desactivar visualmente todos los botones (arriba y abajo)
+        document.querySelectorAll('.pestana-btn, .nav-item').forEach(el => el.classList.remove('active'));
+        
+        // 2. Ocultar todo el contenido
+        document.querySelectorAll('.contenido-pestana').forEach(el => { 
+            el.classList.remove('active'); 
+            el.style.display = 'none'; 
+        });
+
+        // 3. Activar los botones correspondientes al ID seleccionado (sincroniza arriba y abajo)
+        const buttonsToActivate = document.querySelectorAll(`[data-pestana="${tabId}"]`);
+        buttonsToActivate.forEach(btn => btn.classList.add('active'));
+
+        // 4. Mostrar el contenido seleccionado
         const content = document.getElementById(tabId);
-        if (btn) btn.classList.add('active');
         if (content) {
             content.classList.add('active');
             content.style.display = 'block';
-            if (tabId === 'configuracion' && typeof window.renderUsersList === 'function') window.renderUsersList();
+            
+            // Si es configuración, recargar lista de usuarios
+            if (tabId === 'configuracion' && typeof window.renderUsersList === 'function') {
+                window.renderUsersList();
+            }
         }
     },
+
     setupConfigEvents() {
         const btnGuardar = document.getElementById('guardar-configuracion');
         if (btnGuardar) {
@@ -408,8 +437,9 @@ App.UI = {
             });
         }
     },
+
     setupDataEvents() {
-        // Eventos simples para evitar errores si los elementos no existen
+        // Helper para eventos seguros
         const bindClick = (id, fn) => { const el = document.getElementById(id); if(el) el.addEventListener('click', fn); };
         
         bindClick('btn-exportar-datos', () => {
@@ -418,7 +448,7 @@ App.UI = {
         });
 
         bindClick('btn-formatear-db', () => {
-            if(confirm("⚠ ¿Borrar TODOS los datos?")) {
+            if(confirm("⚠ ¿Borrar TODOS los datos locales?")) {
                 localStorage.removeItem(App.Constants.LS_KEYS.CONFIG);
                 localStorage.removeItem(App.Constants.LS_KEYS.ARTIFACTS);
                 window.location.reload();
@@ -434,7 +464,7 @@ App.UI = {
         });
 
         bindClick('btn-cloud-download', async () => {
-            if(!confirm("Se sobrescribirán los datos locales. ¿Continuar?")) return;
+            if(!confirm("Se sobrescribirán los datos locales con los de la nube. ¿Continuar?")) return;
             const btn = document.getElementById('btn-cloud-download');
             btn.disabled = true; btn.textContent = 'Bajando...';
             const res = await App.Cloud.downloadBackup();
@@ -443,6 +473,7 @@ App.UI = {
             else { btn.disabled = false; btn.innerHTML = '☁ Bajar de Nube'; }
         });
     },
+
     showMessage(elementId, msg, color) {
         const el = document.getElementById(elementId);
         if (el) { el.textContent = msg; el.style.color = color; setTimeout(() => el.textContent = '', 4000); }
