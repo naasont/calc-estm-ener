@@ -340,9 +340,147 @@
                                     </div>
                         
                                 </div>
+    </div>
+
+    <!-- Modal de confirmación (usado por Facturación para consumos altos) -->
+    <div id="confirm-modal" class="confirm-modal" style="display:none;">
+        <div class="confirm-modal__card">
+          <p id="confirm-modal-message"></p>
+          <div class="confirm-modal__actions">
+            <button id="confirm-modal-accept" class="btn-primary">Continuar</button>
+            <button id="confirm-modal-cancel" class="btn-secondary">Cancelar</button>
+          </div>
+        </div>
+    </div>
+
+    <!-- Modal de Administración de Artefactos -->
+    <div id="modal-artefactos" class="modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-artefactos-titulo">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Cerrar">&times;</button>
+            <h2 id="modal-artefactos-titulo">Administración de Artefactos</h2>
+            <div class="artefactos-container">
+                <!-- Formulario de Artefactos -->
+                <div class="artefactos-form">
+                    <form id="form-artefactos">
+                        <input type="hidden" id="artefactoId">
+                        <div class="form-grid">
+                                        <div class="form-group">
+                                            <label for="txtAparatos">Aparato:</label>
+                                            <input type="text" id="txtAparatos" required>
+                                            <span class="error-msg"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="numWatt">Watt (W):</label>
+                                            <input type="number" id="numWatt" min="0" step="0.01" required>
+                                            <span class="error-msg"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="numFP">Factor de Potencia (FP):</label>
+                                            <input type="number" id="numFP" min="0.1" max="1" step="0.01" value="0.85">
+                                            <span class="error-msg"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="numHD">Horas/Día (H/D):</label>
+                                            <input type="number" id="numHD" min="0" max="24" step="0.1" value="1">
+                                            <span class="error-msg"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="selFase">Fase:</label>
+                                            <select id="selFase">
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                                                    <label for="numVoltaje">Voltaje (V):</label>
+                                                                    <select id="numVoltaje">
+                                                                        <option value="115">115</option>
+                                                                        <option value="220">220</option>
+                                                                    </select>
+                                            <span class="error-msg"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-buttons">
+                                        <button type="button" id="btn-guardar-artefacto">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5z"/></svg>
+                                            Guardar
+                                        </button>
+                                        
+                                        <button type="button" id="btn-nuevo-artefacto">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+                                            Nuevo
+                                        </button>
+                    
+                                        <button type="button" id="btn-formatear-artefactos" class="btn-warning">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M7.5 5.5A.5.5 0 0 1 8 6v1.5H9.5a.5.5 0 0 1 0 1H8V10a.5.5 0 0 1-1 0V8.5H5.5a.5.5 0 0 1 0-1H7V6a.5.5 0 0 1 .5-.5z"/><path d="m11.25 8.5.83.83a2.5 2.5 0 0 1 0 3.53l-.02.02a2.5 2.5 0 0 1-3.54 0l-.83-.83a.5.5 0 1 1 .71-.71l.83.83a1.5 1.5 0 0 0 2.12 0l.02-.02a1.5 1.5 0 0 0 0-2.12l-.83-.83a.5.5 0 0 1 .71-.71zM1 13.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm10-10a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zM3.5 1a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5z"/></svg>
+                                            Varita
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                        
-                            <!-- Scripts -->
+
+                            <!-- Tabla de Artefactos -->
+                            <div class="artefactos-tabla-container">
+                                <div class="search-container">
+                                    <input type="text" id="filtro-artefactos" placeholder="🔍 Buscar artefacto..." class="search-input">
+                                </div>
+                                <table id="tabla-artefactos">
+                                    <thead>
+                                        <tr>
+                                            <th>Aparato</th>
+                                            <th>Watt</th>
+                                            <th>FP</th>
+                                            <th>H/D</th>
+                                            <th>Fase</th>
+                                            <th>Voltaje</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Filas se insertarán dinámicamente -->
+                                    </tbody>
+                                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========= BARRA DE NAVEGACIÓN MÓVIL ========= -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-pestana="consumo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                <path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8zm0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zM4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+            </svg>
+            Censo
+        </button>
+
+        <button class="nav-item" data-pestana="corrientes">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+            </svg>
+            Corrientes
+        </button>
+
+        <button class="nav-item" data-pestana="facturas">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M4 0h5.293A1 1 0 0 1 10 .293L13.707 4a1 1 0 0 1 .293.707V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm5.5 1.5v2a1 1 0 0 0 1 1h2l-3-3z"/>
+                <path d="M4.5 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+            Facturas
+        </button>
+
+        <button class="nav-item" data-pestana="configuracion">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311a1.464 1.464 0 0 1-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413-1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311-.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+            </svg>
+            Config
+        </button>
+    </nav>
+
+    <!-- Scripts -->
     <script src="Scripts/common.js?v=2.2"></script>
     <script src="Scripts/login.js?v=2"></script>
     <script src="Scripts/artefactos.js?v=2"></script>
@@ -362,215 +500,5 @@
     </script>
 </body>
 </html>
-                        
-                            <!-- Modal de confirmación (usado por Facturación para consumos altos) -->
-                            <div id="confirm-modal" class="confirm-modal" style="display:none;">
-                                <div class="confirm-modal__card">
-                                  <p id="confirm-modal-message"></p>
-                                  <div class="confirm-modal__actions">
-                                    <button id="confirm-modal-accept" class="btn-primary">Continuar</button>
-                                    <button id="confirm-modal-cancel" class="btn-secondary">Cancelar</button>
-                                  </div>
-                                </div>
-                            </div>
-                        
-                        
-                        
-                            <!-- Modal de Administración de Artefactos -->
-                        
-                            <div id="modal-artefactos" class="modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-artefactos-titulo">
-                        
-                                <div class="modal-overlay"></div>
-                        
-                                <div class="modal-content">
-                        
-                                    <button class="modal-close" aria-label="Cerrar">&times;</button>
-                        
-                                    <h2 id="modal-artefactos-titulo">Administración de Artefactos</h2>
-                        
-                        
-                        
-                                    <div class="artefactos-container">
-                        
-                                        <!-- Formulario de Artefactos -->
-                        
-                                        <div class="artefactos-form">
-                        
-                                            <form id="form-artefactos">
-                        
-                                                <input type="hidden" id="artefactoId">
-                        
-                                                <div class="form-grid">
-                        
-                                                                                <div class="form-group">
-                        
-                                                                                    <label for="txtAparatos">Aparato:</label>
-                        
-                                                                                    <input type="text" id="txtAparatos" required>
-                        
-                                                                                    <span class="error-msg"></span>
-                        
-                                                                                </div>
-                        
-                                                                                <div class="form-group">
-                        
-                                                                                    <label for="numWatt">Watt (W):</label>
-                        
-                                                                                    <input type="number" id="numWatt" min="0" step="0.01" required>
-                        
-                                                                                    <span class="error-msg"></span>
-                        
-                                                                                </div>
-                        
-                                                                                <div class="form-group">
-                        
-                                                                                    <label for="numFP">Factor de Potencia (FP):</label>
-                        
-                                                                                    <input type="number" id="numFP" min="0.1" max="1" step="0.01" value="0.85">
-                        
-                                                                                    <span class="error-msg"></span>
-                        
-                                                                                </div>
-                        
-                                                                                <div class="form-group">
-                        
-                                                                                    <label for="numHD">Horas/Día (H/D):</label>
-                        
-                                                                                    <input type="number" id="numHD" min="0" max="24" step="0.1" value="1">
-                        
-                                                                                    <span class="error-msg"></span>
-                        
-                                                                                </div>
-                        
-                                                                                <div class="form-group">
-                        
-                                                                                    <label for="selFase">Fase:</label>
-                        
-                                                                                    <select id="selFase">
-                        
-                                                                                        <option value="1">1</option>
-                        
-                                                                                        <option value="2">2</option>
-                        
-                                                                                        <option value="3">3</option>
-                        
-                                                                                    </select>
-                        
-                                                                                </div>
-                        
-                                                                                <div class="form-group">
-                        
-                                                                                                                    <label for="numVoltaje">Voltaje (V):</label>
-                        
-                                                                                                                    <select id="numVoltaje">
-                        
-                                                                                                                        <option value="115">115</option>
-                        
-                                                                                                                        <option value="220">220</option>
-                        
-                                                                                                                    </select>
-                        
-                                                                                    <span class="error-msg"></span>
-                        
-                                                                                </div>
-                        
-                                                                            </div>
-                        
-                                                                            <div class="form-buttons">
-                                                                                <button type="button" id="btn-guardar-artefacto">
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5z"/></svg>
-                                                                                    Guardar
-                                                                                </button>
-                                                                                
-                                                                                <button type="button" id="btn-nuevo-artefacto">
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
-                                                                                    Nuevo
-                                                                                </button>
-                                                            
-                                                                                <button type="button" id="btn-formatear-artefactos" class="btn-warning">
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M7.5 5.5A.5.5 0 0 1 8 6v1.5H9.5a.5.5 0 0 1 0 1H8V10a.5.5 0 0 1-1 0V8.5H5.5a.5.5 0 0 1 0-1H7V6a.5.5 0 0 1 .5-.5z"/><path d="m11.25 8.5.83.83a2.5 2.5 0 0 1 0 3.53l-.02.02a2.5 2.5 0 0 1-3.54 0l-.83-.83a.5.5 0 1 1 .71-.71l.83.83a1.5 1.5 0 0 0 2.12 0l.02-.02a1.5 1.5 0 0 0 0-2.12l-.83-.83a.5.5 0 0 1 .71-.71zM1 13.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm10-10a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zM3.5 1a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5z"/></svg>
-                                                                                    Varita
-                                                                                </button>
-                                                                            </div>
-                        
-                                                                        </form>
-                        
-                                                                    </div>
-                        
-                                                    
-                        
-                                                                    <!-- Tabla de Artefactos -->
-                        
-                                                                    <div class="artefactos-tabla-container">
-                        
-                                                                        <div class="search-container">
-                                                                            <input type="text" id="filtro-artefactos" placeholder="🔍 Buscar artefacto..." class="search-input">
-                                                                        </div>
-                        
-                                                                        <table id="tabla-artefactos">
-                        
-                                                                            <thead>
-                        
-                                                                                <tr>
-                        
-                                                                                    <th>Aparato</th>
-                        
-                                                                                    <th>Watt</th>
-                        
-                                                                                    <th>FP</th>
-                        
-                                                                                    <th>H/D</th>
-                        
-                                                                                    <th>Fase</th>
-                        
-                                                                                    <th>Voltaje</th>
-                        
-                                                                                    <th>Acciones</th>
-                        
-                                                                                </tr>
-                        
-                                                                            </thead>
-                        
-                                                                            <tbody>
-                        
-                                                                                <!-- Filas se insertarán dinámicamente -->
-                        
-                                                                            </tbody>
-                        
-                                                                        </table>
-                        
-                                        </div>
-                        
-                                    </div>
-                        
-                                </div>
-                        
-                            </div>
-                        
-                        
-                        
-                        </body>
-                        
-                        <!-- ========= BARRA DE NAVEGACIÓN MÓVIL ========= -->
-                        <div class="bottom-nav">
-                            <button class="nav-item active" data-pestana="consumo">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/></svg>
-                                Censo
-                            </button>
-                            <button class="nav-item" data-pestana="corrientes">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M5 3a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm0 3a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm0 3a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm0 3a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5z"/></svg>
-                                Corrientes
-                            </button>
-                            <button class="nav-item" data-pestana="facturas">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4zm0 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/><path d="M4.5 3.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5z"/></svg>
-                                Facturación
-                            </button>
-                            <button class="nav-item" data-pestana="configuracion">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311a1.464 1.464 0 0 1-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413-1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/></svg>
-                                Config
-                            </button>
-                        </div>
-
-                        </html>
                         
                         
