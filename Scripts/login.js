@@ -302,4 +302,30 @@ document.addEventListener('DOMContentLoaded', function() {
         loginContainer.style.display = 'flex';
         appContainer.style.display = 'none';
     }
+
+    // --- Lógica de Instalación PWA ---
+    let deferredPrompt;
+    const installBtn = document.getElementById('install-app-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevenir que Chrome muestre el prompt automáticamente
+        e.preventDefault();
+        deferredPrompt = e;
+        // Mostrar el botón en el menú
+        if (installBtn) installBtn.style.display = 'block';
+    });
+
+    if (installBtn) {
+        installBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBtn.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+    }
 });

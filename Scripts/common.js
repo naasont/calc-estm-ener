@@ -376,6 +376,54 @@ App.UI = {
         this.setupTabs();
         this.setupConfigEvents();
         this.setupDataEvents();
+        this.setupNetworkStatus(); // <--- NUEVA FUNCIÓN
+    },
+
+    // --- NUEVO: Detector de Estado de Red ---
+    setupNetworkStatus() {
+        const updateOnlineStatus = () => {
+            const isOnline = navigator.onLine;
+            const btnUpload = document.getElementById('btn-cloud-upload');
+            const btnDownload = document.getElementById('btn-cloud-download');
+            let statusDiv = document.getElementById('network-status-indicator'); // Crearemos esto dinámicamente
+
+            // Crear indicador visual si no existe
+            if (!statusDiv) {
+                const div = document.createElement('div');
+                div.id = 'network-status-indicator';
+                div.style.position = 'fixed';
+                div.style.bottom = '70px'; // Encima del nav móvil
+                div.style.left = '50%';
+                div.style.transform = 'translateX(-50%)';
+                div.style.padding = '5px 15px';
+                div.style.borderRadius = '20px';
+                div.style.backgroundColor = '#dc3545';
+                div.style.color = 'white';
+                div.style.fontSize = '0.8rem';
+                div.style.zIndex = '1500';
+                div.style.display = 'none';
+                div.textContent = 'Sin Conexión 📡';
+                document.body.appendChild(div);
+                statusDiv = div;
+            }
+
+            if (btnUpload) btnUpload.disabled = !isOnline;
+            if (btnDownload) btnDownload.disabled = !isOnline;
+
+            if (statusDiv) {
+                statusDiv.style.display = isOnline ? 'none' : 'block';
+            }
+            
+            if (!isOnline) {
+                console.log("Modo Offline activado.");
+            }
+        };
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        // Ejecutar al inicio
+        updateOnlineStatus();
     },
     
     setupTabs() {
