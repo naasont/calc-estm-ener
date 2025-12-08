@@ -117,9 +117,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const crearUsuarioForm = document.getElementById('crear-usuario-form');
     const mensajeCrearUsuario = document.getElementById('mensaje-crear-usuario');
 
-    // --- 1. Lógica de Inicio de Sesión (ASÍNCRONA) ---
+    // --- 1. Lógica de Inicio de Sesión (ASÍNCRONA & DEPURADA) ---
     loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+        console.log("Intentando iniciar sesión..."); // LOG 1
+
         const usernameInput = document.getElementById('username').value;
         const passwordInput = document.getElementById('password').value;
         
@@ -129,58 +131,44 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.textContent = 'Verificando...';
 
         try {
-            // Ahora esperamos la promesa de login
+            // Verificación previa de existencia
+            if (!App || !App.Auth) {
+                throw new Error("El módulo App.Auth no está inicializado. Recarga la página.");
+            }
+
+            console.log("Llamando a App.Auth.login..."); // LOG 2
             const loginResult = await App.Auth.login(usernameInput, passwordInput);
+            console.log("Resultado login:", loginResult); // LOG 3
 
             if (loginResult.success) {
-                // --- LÓGICA DE SINCRONIZACIÓN PARA 'INVITADO' (Modo: Forzar Sincronización) ---
+                // ... Lógica de Invitado (Mantenemos tu lógica original) ...
                 if (usernameInput.toLowerCase() === 'invitado') {
                     if (navigator.onLine) {
-                        // CASO A: Hay Internet -> Forzamos la descarga siempre
                         btn.textContent = 'Sincronizando...';
                         try {
                             const downloadResult = await App.Cloud.downloadBackup();
-                            
                             if (downloadResult.success) {
-                                alert("✅ Sincronización exitosa: Base de datos actualizada desde la nube.");
-                                // --- RECARGA DE MEMORIA CRÍTICA ---
-                                // 1. Recargar Artefactos (Variables en RAM vs LocalStorage)
-                                if (App.Artefactos && typeof App.Artefactos.loadArtifacts === 'function') {
-                                    App.Artefactos.loadArtifacts();
-                                }
-                                
-                                // 2. Recargar Usuarios (Para asegurar permisos actualizados)
+                                // Recargas necesarias
+                                if (App.Artefactos && typeof App.Artefactos.loadArtifacts === 'function') App.Artefactos.loadArtifacts();
                                 App.Auth.loadUsers();
-                                
-                                // 3. Recargar Configuración
                                 App.Config.init();
-
-                                // 4. Forzar actualización del módulo de Consumo
-                                if (App.Consumo && typeof App.Consumo.refreshCatalog === 'function') {
-                                    App.Consumo.refreshCatalog();
-                                }
+                                if (App.Consumo && typeof App.Consumo.refreshCatalog === 'function') App.Consumo.refreshCatalog();
                             } else {
-                                alert("⚠ Advertencia: Hubo un error al intentar descargar de la nube. Se usarán los datos locales.\n\nDetalle: " + downloadResult.message);
+                                console.warn("Fallo descarga nube:", downloadResult.message);
                             }
                         } catch (err) {
-                            alert("❌ Error crítico durante la sincronización. Se usarán los datos locales.");
+                            console.error("Error sincronización invitado:", err);
                         }
-                    } else {
-                        // CASO B: No hay Internet -> Avisamos y continuamos con lo local
-                        alert("📡 Sin conexión a Internet: No se pudo sincronizar con la nube. Se usarán los datos locales almacenados en este dispositivo.");
                     }
-
-                    // Pequeña pausa para asegurar que el usuario procesa la alerta antes de cambiar de pantalla
-                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
                  iniciarInterfaz();
             } else {
-                errorMessage.textContent = loginResult.message;
+                errorMessage.textContent = loginResult.message || "Credenciales incorrectas.";
                 errorMessage.style.display = 'block';
             }
         } catch (error) {
-            console.error("Error en login:", error);
-            errorMessage.textContent = "Error interno de autenticación.";
+            console.error("CRITICAL ERROR en Login:", error);
+            errorMessage.textContent = "Error del sistema: " + error.message;
             errorMessage.style.display = 'block';
         } finally {
             btn.disabled = false;

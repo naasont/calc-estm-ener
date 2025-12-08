@@ -1,5 +1,6 @@
 // =================================================================================
 // Módulo de Censo de Carga (Consumo)
+// Versión: Híbrida (Visual Original + Optimización Lazy Load/Cache)
 // =================================================================================
 
 window.App = window.App || {};
@@ -13,14 +14,21 @@ App.Consumo = (function(window, $) {
     let aparatosSeleccionados = []; // Dispositivos seleccionados por el usuario
     let estadoConsumo = {}; // Resultados del último cálculo para exportación
 
+    // --- OPTIMIZACIÓN: Caché de Selectores DOM ---
+    let $itemsContainer;
+    let $listaAparatos;
+    let $btnExportarPdf;
+    let $resultadoDiv;
+    let $btnLimpiar;
+    let $btnCalcular;
+
     // --- Funciones de Utilidad Internas ---
 
     function cargarCatalogoDesdeStorage() {
-        const raw = localStorage.getItem(App.Constants.LS_KEYS.ARTIFACTS); // App.Constants.LS_KEYS.ARTIFACTS
+        const raw = localStorage.getItem(App.Constants.LS_KEYS.ARTIFACTS);
         if (raw) {
             try {
                 const data = JSON.parse(raw);
-                // Mapeamos los datos al formato que usa Consumo
                 aparatos = data.map(a => ({
                     nombre: a.nombre,
                     vatios: a.vatios,
@@ -29,57 +37,58 @@ App.Consumo = (function(window, $) {
                     fase: a.fase,
                     voltaje: a.voltaje
                 }));
-                // Actualizamos los mapas internos y el plugin de autocompletado
                 aparatosMap = new Map(aparatos.map(a => [a.nombre, a]));
                 configurarAutocompletado();
-                console.log("Consumo: Catálogo recargado en caliente. Items:", aparatos.length);
+                console.log("Consumo: Catálogo recargado. Items:", aparatos.length);
             } catch (e) {
                 console.error("Error recargando consumo:", e);
             }
         }
     }
 
-    /**
-     * Convierte un texto SVG en una imagen DataURL (PNG) usando un canvas.
-     * Es asíncrono y devuelve una promesa.
-     * @param {string} svgText El contenido de texto del archivo SVG.
-     * @returns {Promise<string|null>}
-     */
     function svgToPngDataURL(svgText) {
         return new Promise((resolve) => {
             const img = new Image();
             const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
             const url = URL.createObjectURL(svgBlob);
-
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const scale = 2; // Mejor calidad en PDF
+                const scale = 2; 
                 canvas.width = img.width * scale;
                 canvas.height = img.height * scale;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                const dataUrl = canvas.toDataURL('image/png');
+                resolve(canvas.toDataURL('image/png'));
                 URL.revokeObjectURL(url);
-                resolve(dataUrl);
             };
-
-            img.onerror = () => {
-                console.warn("Error al procesar el SVG en una imagen.");
-                URL.revokeObjectURL(url);
-                resolve(null);
-            };
-
+            img.onerror = () => { resolve(null); URL.revokeObjectURL(url); };
             img.src = url;
         });
     }
 
+    // --- OPTIMIZACIÓN: Carga Diferida (Lazy Load) ---
+    // Esta función descarga las librerías solo cuando se necesitan
+    async function cargarLibreriasPDF() {
+        if (window.jspdf && window.jspdf.jsPDF) return; // Si ya existen, no hacer nada
+        
+        console.log("Optimizacion: Cargando librerías PDF bajo demanda...");
+        // Usamos la utilidad de common.js
+        await App.Utils.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+        await App.Utils.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js");
+    }
+
     /**
      * Genera un reporte en PDF del censo de carga.
+     * AHORA INCLUYE CARGA DIFERIDA.
      */
     async function exportarAPDF() {
+        // 1. Paso de Optimización: Asegurar librerías
+        await cargarLibreriasPDF();
+
         if (!window.jspdf || !window.jspdf.jsPDF) {
-            throw new Error("La librería jsPDF no está cargada.");
+            throw new Error("No se pudo cargar la librería jsPDF.");
         }
+
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
@@ -88,15 +97,11 @@ App.Consumo = (function(window, $) {
             const response = await fetch('Logo/logo.svg');
             if (response.ok) {
                 logoDataUrl = await svgToPngDataURL(await response.text());
-            } else {
-                console.warn(`Advertencia: No se encontró el logo en 'Logo/logo.svg' (Estado: ${response.status}).`);
             }
-        } catch (error) {
-            console.warn("Advertencia: No se pudo cargar el logo para el PDF. Se generará sin él.", error);
-        }
+        } catch (error) {}
 
         const diasMes = App.Config.data.diasMes || 30;
-        const currentUser = App.Auth.currentUser; // Usar la nueva arquitectura
+        const currentUser = App.Auth.currentUser; 
         const fecha = new Date();
         const fechaFormateada = `${fecha.getDate().toString().padStart(2, '0')}/${(fecha.getMonth() + 1).toString().padStart(2, '0')}/${fecha.getFullYear()}`;
         const nombreArchivo = `Censo-Carga-${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}-${fecha.getDate().toString().padStart(2, '0')}.pdf`;
@@ -158,17 +163,15 @@ App.Consumo = (function(window, $) {
     // --- Lógica del DOM y Autocompletado ---
 
     function configurarAutocompletado() {
-        $("#lista-aparatos").autocomplete({
+        if (!$listaAparatos) return;
+        $listaAparatos.autocomplete({
             source: aparatos.map(a => ({
                 label: `${a.nombre} (${a.vatios}W, ${a.voltaje}V)`,
                 value: a.nombre
             })),
             minLength: 2,
             delay: 250,
-            focus: (e, ui) => {
-                e.preventDefault();
-                $(e.target).val(ui.item.label);
-            },
+            focus: (e, ui) => { e.preventDefault(); $(e.target).val(ui.item.label); },
             select: (e, ui) => {
                 e.preventDefault();
                 const dispositivo = aparatosMap.get(ui.item.value);
@@ -192,14 +195,16 @@ App.Consumo = (function(window, $) {
         aparatosSeleccionados = [];
         estadoConsumo = {};
         actualizarInterfaz();
-        $('#lista-aparatos').val('');
-        $('#exportar-pdf').addClass('oculto');
-        $('#resultado').empty();
-        $('#boton-limpiar').hide();
+        $listaAparatos.val('');
+        $btnExportarPdf.addClass('oculto');
+        $resultadoDiv.empty();
+        $btnLimpiar.hide();
     }
 
+    // --- VISUALIZACIÓN ORIGINAL ---
     function actualizarInterfaz() {
-        const contenedor = $('#items-seleccionados').empty();
+        // Usamos el contenedor cacheado
+        $itemsContainer.empty();
         const diasMes = App.Config.data.diasMes;
 
         aparatosSeleccionados.forEach((aparato, indice) => {
@@ -220,7 +225,7 @@ App.Consumo = (function(window, $) {
                     </div>
                 </div>
             `);
-            contenedor.append(fila);
+            $itemsContainer.append(fila);
         });
 
         const debouncedUpdate = debounce(function() {
@@ -247,11 +252,11 @@ App.Consumo = (function(window, $) {
             actualizarInterfaz();
         });
 
-        $('#boton-calcular').toggleClass('oculto', aparatosSeleccionados.length === 0);
-        $('#boton-limpiar').toggle(aparatosSeleccionados.length > 0);
+        $btnCalcular.toggleClass('oculto', aparatosSeleccionados.length === 0);
+        $btnLimpiar.toggle(aparatosSeleccionados.length > 0);
     }
 
-    // --- Lógica Principal de Cálculo ---
+    // --- Lógica Principal de Cálculo (VISUALIZACIÓN RESTAURADA) ---
 
     function calcularConsumo() {
         const config = App.Config.data;
@@ -282,7 +287,8 @@ App.Consumo = (function(window, $) {
             consumoKwhDia: consumoKwhMesTotal / config.diasMes
         };
 
-        const resultadoDiv = $('#resultado').empty().append('<h3>Resultados Finales</h3>');
+        // Usamos el div cacheado pero la estructura HTML original
+        $resultadoDiv.empty().append('<h3>Resultados Finales</h3>');
         const contenedorResultados = $('<div>').addClass('contenedor-resultados');
 
         function createResultItem(label, value, valueClass = 'valor') {
@@ -316,13 +322,21 @@ App.Consumo = (function(window, $) {
             )
         );
 
-        resultadoDiv.append(contenedorResultados);
-        $('#exportar-pdf').removeClass('oculto');
+        $resultadoDiv.append(contenedorResultados);
+        $btnExportarPdf.removeClass('oculto');
     }
 
     // --- Inicialización y API Pública ---
 
     function init() {
+        // Inicializar caché de variables DOM
+        $itemsContainer = $('#items-seleccionados');
+        $listaAparatos = $('#lista-aparatos');
+        $btnExportarPdf = $('#exportar-pdf');
+        $resultadoDiv = $('#resultado');
+        $btnLimpiar = $('#boton-limpiar');
+        $btnCalcular = $('#boton-calcular');
+
         cargarCatalogoDesdeStorage();
 
         $(document).on('click', '#exportar-pdf', async function() {
@@ -333,6 +347,7 @@ App.Consumo = (function(window, $) {
             const btn = $(this).prop('disabled', true).text('Generando PDF...');
             $('body').addClass('wait-cursor');
             try {
+                // Aquí ocurre la magia de la carga diferida
                 await exportarAPDF();
             } catch (error) {
                 console.error("Error fatal al generar el PDF:", error);
@@ -343,26 +358,16 @@ App.Consumo = (function(window, $) {
             }
         });
 
-        $('#boton-limpiar').on('click', limpiarTodo);
-        $('#boton-calcular').on('click', calcularConsumo);
+        $btnLimpiar.on('click', limpiarTodo);
+        $btnCalcular.on('click', calcularConsumo);
     }
 
     $(document).ready(init);
 
     // API Pública del módulo
     return {
-        /**
-         * Refresca el catálogo de autocompletado. Es llamado por artefactos.js.
-         * @param {Array} artifactsData - Datos de los artefactos.
-         */
-        refreshAutocomplete: function() {
-            // Mantenemos compatibilidad, pero preferimos la carga directa
-            cargarCatalogoDesdeStorage();
-        },
-        // Nueva función dedicada para llamadas externas
-        refreshCatalog: function() {
-            cargarCatalogoDesdeStorage();
-        }
+        refreshAutocomplete: function() { cargarCatalogoDesdeStorage(); },
+        refreshCatalog: function() { cargarCatalogoDesdeStorage(); }
     };
 
 })(window, jQuery);
