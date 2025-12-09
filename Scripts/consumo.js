@@ -1,6 +1,5 @@
 // =================================================================================
-// Módulo de Censo de Carga (Consumo)
-// Versión: Híbrida (Visual Original + Optimización Lazy Load/Cache)
+// Módulo de Censo de Carga (Consumo) - VERSIÓN FINAL (PDF Preview + kVA)
 // =================================================================================
 
 window.App = window.App || {};
@@ -8,13 +7,14 @@ window.App = window.App || {};
 App.Consumo = (function(window, $) {
     'use strict';
 
-    // --- Estado Interno del Módulo ---
-    let aparatos = []; // Catálogo para autocompletado
-    let aparatosMap = new Map(); // Índice para búsqueda rápida
-    let aparatosSeleccionados = []; // Dispositivos seleccionados por el usuario
-    let estadoConsumo = {}; // Resultados del último cálculo para exportación
+    // --- Estado Interno ---
+    let aparatos = [];
+    let aparatosMap = new Map();
+    let aparatosSeleccionados = [];
+    let estadoConsumo = {}; 
+    let _cachedLogoBase64 = null;
 
-    // --- OPTIMIZACIÓN: Caché de Selectores DOM ---
+    // --- Caché de Selectores ---
     let $itemsContainer;
     let $listaAparatos;
     let $btnExportarPdf;
@@ -22,8 +22,7 @@ App.Consumo = (function(window, $) {
     let $btnLimpiar;
     let $btnCalcular;
 
-    // --- Funciones de Utilidad Internas ---
-
+    // --- Carga de Datos ---
     function cargarCatalogoDesdeStorage() {
         const raw = localStorage.getItem(App.Constants.LS_KEYS.ARTIFACTS);
         if (raw) {
@@ -39,117 +38,228 @@ App.Consumo = (function(window, $) {
                 }));
                 aparatosMap = new Map(aparatos.map(a => [a.nombre, a]));
                 configurarAutocompletado();
-                console.log("Consumo: Catálogo recargado. Items:", aparatos.length);
-            } catch (e) {
-                console.error("Error recargando consumo:", e);
-            }
+            } catch (e) { console.error("Error recargando consumo:", e); }
         }
     }
 
-    function svgToPngDataURL(svgText) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
-            const url = URL.createObjectURL(svgBlob);
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const scale = 2; 
-                canvas.width = img.width * scale;
-                canvas.height = img.height * scale;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                resolve(canvas.toDataURL('image/png'));
-                URL.revokeObjectURL(url);
-            };
-            img.onerror = () => { resolve(null); URL.revokeObjectURL(url); };
-            img.src = url;
-        });
+    // --- Utilidad Logo ---
+    async function getLogoDataUrl() {
+        if (_cachedLogoBase64) return _cachedLogoBase64;
+        try {
+            const response = await fetch('Logo/logo.svg');
+            if (!response.ok) throw new Error("Logo no encontrado");
+            const svgText = await response.text();
+            return new Promise((resolve) => {
+                const img = new Image();
+                const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(svgBlob);
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width * 2; canvas.height = img.height * 2;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    _cachedLogoBase64 = canvas.toDataURL('image/png');
+                    URL.revokeObjectURL(url);
+                    resolve(_cachedLogoBase64);
+                };
+                img.onerror = () => { resolve(null); };
+                img.src = url;
+            });
+        } catch (e) { return null; }
     }
 
-    // --- OPTIMIZACIÓN: Carga Diferida (Lazy Load) ---
-    // Esta función descarga las librerías solo cuando se necesitan
+    // --- Carga Lazy PDF ---
     async function cargarLibreriasPDF() {
-        if (window.jspdf && window.jspdf.jsPDF) return; // Si ya existen, no hacer nada
-        
-        console.log("Optimizacion: Cargando librerías PDF bajo demanda...");
-        // Usamos la utilidad de common.js
+        if (window.jspdf && window.jspdf.jsPDF) return; 
         await App.Utils.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
         await App.Utils.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js");
     }
 
-    /**
-     * Genera un reporte en PDF del censo de carga.
-     * AHORA INCLUYE CARGA DIFERIDA.
-     */
+    // --- GENERACIÓN DE PDF (PREVIEW + DISEÑO MEJORADO) ---
     async function exportarAPDF() {
-        // 1. Paso de Optimización: Asegurar librerías
         await cargarLibreriasPDF();
-
-        if (!window.jspdf || !window.jspdf.jsPDF) {
-            throw new Error("No se pudo cargar la librería jsPDF.");
-        }
-
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        let logoDataUrl = null;
-        try {
-            const response = await fetch('Logo/logo.svg');
-            if (response.ok) {
-                logoDataUrl = await svgToPngDataURL(await response.text());
-            }
-        } catch (error) {}
+        const logoData = await getLogoDataUrl();
+        if (logoData) doc.addImage(logoData, 'PNG', 14, 10, 30, 15);
 
-        const diasMes = App.Config.data.diasMes || 30;
-        const currentUser = App.Auth.currentUser; 
-        const fecha = new Date();
-        const fechaFormateada = `${fecha.getDate().toString().padStart(2, '0')}/${(fecha.getMonth() + 1).toString().padStart(2, '0')}/${fecha.getFullYear()}`;
-        const nombreArchivo = `Censo-Carga-${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}-${fecha.getDate().toString().padStart(2, '0')}.pdf`;
-
-        if (logoDataUrl) {
-            doc.addImage(logoDataUrl, 'PNG', 14, 15, 30, 15);
-        }
-
-        doc.setFontSize(20);
-        doc.text('Reporte de Censo de Carga', 105, 25, { align: 'center' });
-        doc.setFontSize(10);
-        doc.text(`Generado por: ${currentUser ? currentUser.username : 'N/A'}`, 14, 35);
-        doc.text(`Fecha: ${fechaFormateada}`, 196, 35, { align: 'right' });
-
-        const head = [['Dispositivo', 'Potencia\n(W)', 'FP', 'Cant.', 'H/D', 'Cons. Diario\n(kWh)', 'Cons. Mensual\n(kWh)']];
+        const config = App.Config.data;
+        const currentUser = App.Auth.currentUser;
+        const fecha = new Date().toLocaleDateString('es-ES');
+        
+        // --- 1. CÁLCULOS TÉCNICOS ---
+        let totalWatts = 0;
+        let totalKwhMes = 0;
+        let totalVA = 0; // Acumulador de Potencia Aparente
+        
         const body = aparatosSeleccionados.map(a => {
-            const potenciaTotal = (a.vatios || 0) * (a.cantidad || 0);
-            const consumoDiario = (potenciaTotal * (a.horasDiarias || 0)) / 1000;
-            const consumoMensual = consumoDiario * diasMes;
+            const potTotalW = a.vatios * a.cantidad;
+            const consDiario = (potTotalW * a.horasDiarias) / 1000;
+            const consMensual = consDiario * config.diasMes;
+            
+            // Cálculo Potencia Aparente (S = P / FP)
+            const fp = a.factorPotencia || 0.9;
+            const vaItem = (a.vatios / fp) * a.cantidad; 
+
+            totalWatts += potTotalW;
+            totalKwhMes += consMensual;
+            totalVA += vaItem;
+
             return [
                 a.nombre,
-                potenciaTotal.toFixed(2),
-                (a.factorPotencia || 0.9).toFixed(2),
+                `${a.vatios} W`,
                 a.cantidad,
-                (a.horasDiarias || 0).toFixed(2),
-                consumoDiario.toFixed(2),
-                consumoMensual.toFixed(2)
+                `${a.horasDiarias} h`,
+                consDiario.toFixed(2),
+                consMensual.toFixed(2)
             ];
         });
 
-        const totalPotencia = body.reduce((sum, row) => sum + parseFloat(row[1]), 0);
-        const totalCantidad = body.reduce((sum, row) => sum + parseInt(row[3], 10), 0);
-        const totalConsumoDiario = body.reduce((sum, row) => sum + parseFloat(row[5]), 0);
-        const totalConsumoMensual = body.reduce((sum, row) => sum + parseFloat(row[6]), 0);
-        const foot = [['TOTAL', totalPotencia.toFixed(2), '', totalCantidad, '', totalConsumoDiario.toFixed(2), totalConsumoMensual.toFixed(2)]];
+        const kvaTotal = totalVA / 1000; 
+        
+        // Reglas de Redondeo (CTC y DAC Enteros)
+        const ctcReal = Math.max(kvaTotal, 1);
+        const ctcRedondeado = Math.round(ctcReal); // Redondeo entero
+        
+        const dacReal = ctcReal <= 5 ? ctcReal : Math.max(ctcReal * 0.4, 5);
+        const dacRedondeado = Math.round(dacReal); // Redondeo entero
 
+        const consumoDiarioTotal = totalKwhMes / config.diasMes;
+
+        // Cálculo de Costos (Usando valores reales para precisión monetaria)
+        const costos = App.Utils.calculateCostos({ 
+            consumoKwhMes: totalKwhMes, 
+            dacKva: dacRedondeado // Usamos el DAC redondeado para el cobro
+        });
+
+        // --- 2. ENCABEZADO ---
+        doc.setFontSize(18);
+        doc.setTextColor(44, 62, 80);
+        doc.text('Reporte de Censo de Carga', 105, 20, { align: 'center' });
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Fecha: ${fecha}`, 196, 15, { align: 'right' });
+        doc.text(`Generado por: ${currentUser ? currentUser.username : 'Invitado'}`, 196, 20, { align: 'right' });
+
+        // --- 3. TABLA DE APARATOS ---
         doc.autoTable({
-            head, body, foot, startY: 45, margin: { top: 40 },
-            styles: { halign: 'center', valign: 'middle' },
-            headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
-            footStyles: { fillColor: [236, 240, 241], textColor: 44, fontStyle: 'bold' },
-            columnStyles: { 0: { halign: 'left' } },
-            didParseCell: data => {
-                if (data.section === 'foot' && data.column.index === 0) data.cell.styles.halign = 'right';
+            head: [['Aparato', 'Potencia (W)', 'Cant.', 'Uso/Día', 'kWh/Día', 'kWh/Mes']],
+            body: body,
+            startY: 35,
+            theme: 'striped',
+            headStyles: { fillColor: [0, 123, 255], textColor: 255, fontStyle: 'bold', halign: 'center' },
+            bodyStyles: { halign: 'center' },
+            
+            // Pie de página (Totales)
+            foot: [['TOTALES', `${totalWatts.toLocaleString()} W`, '', '', '', `${totalKwhMes.toFixed(2)} kWh`]],
+            footStyles: { 
+                fillColor: [240, 240, 240], 
+                textColor: 0, 
+                fontStyle: 'bold'
+            },
+            columnStyles: { 
+                0: { halign: 'left' },
+                1: { halign: 'center' }, 
+                5: { fontStyle: 'bold', halign: 'right' }
+            },
+            didParseCell: function(data) {
+                if (data.section === 'foot') {
+                    if (data.column.index === 1) data.cell.styles.halign = 'center';
+                    if (data.column.index === 5) data.cell.styles.halign = 'right';
+                }
             }
         });
 
-        doc.save(nombreArchivo);
+        let currentY = doc.lastAutoTable.finalY + 15;
+
+        // --- 4. VALORES CONCRETOS (DISEÑO MEJORADO) ---
+        // Título de sección
+        doc.setFontSize(12);
+        doc.setTextColor(0, 51, 102); // Azul oscuro
+        doc.text('Valores Concretos', 14, currentY);
+        currentY += 5;
+
+        // Configuración de la "Grilla" de valores
+        const boxHeight = 22;
+        const boxWidth = 35;
+        const startX = 14;
+        const gap = 4;
+
+        // Función auxiliar para dibujar cajas de datos
+        const drawDataBox = (x, label, value, unit) => {
+            // Fondo caja
+            doc.setFillColor(248, 249, 250);
+            doc.setDrawColor(220, 220, 220);
+            doc.rect(x, currentY, boxWidth, boxHeight, 'FD');
+            
+            // Etiqueta
+            doc.setFontSize(8);
+            doc.setTextColor(100);
+            doc.text(label, x + (boxWidth/2), currentY + 6, { align: 'center' });
+            
+            // Valor
+            doc.setFontSize(11);
+            doc.setTextColor(0);
+            doc.setFont(undefined, 'bold');
+            doc.text(value.toString(), x + (boxWidth/2), currentY + 14, { align: 'center' });
+            
+            // Unidad
+            doc.setFontSize(7);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(120);
+            doc.text(unit, x + (boxWidth/2), currentY + 19, { align: 'center' });
+        };
+
+        // Dibujar las 5 cajas solicitadas
+        drawDataBox(startX, "CTC", ctcRedondeado, "kVA");
+        drawDataBox(startX + boxWidth + gap, "DAC", dacRedondeado, "kVA");
+        drawDataBox(startX + (boxWidth + gap)*2, "Consumo Mes", totalKwhMes.toFixed(0), "kWh");
+        drawDataBox(startX + (boxWidth + gap)*3, "Consumo Diario", consumoDiarioTotal.toFixed(2), "kWh");
+        drawDataBox(startX + (boxWidth + gap)*4, "Días Fact.", config.diasMes, "Días");
+
+        currentY += boxHeight + 15;
+
+        // --- 5. ESTIMACIÓN DE COSTOS ---
+        // Caja contenedora
+        doc.setDrawColor(200);
+        doc.setFillColor(250, 255, 250); // Verde muy sutil
+        doc.rect(14, currentY, 182, 35, 'FD');
+
+        doc.setFontSize(12);
+        doc.setTextColor(0, 51, 102);
+        doc.text('Resumen Financiero', 20, currentY + 8);
+
+        doc.setFontSize(10);
+        doc.setTextColor(60);
+        
+        // Desglose
+        doc.text(`Energía ($${config.costoKwh}/kWh):`, 20, currentY + 16);
+        doc.text(`Demanda ($${config.costoKva}/kVA):`, 20, currentY + 22);
+        doc.text(`IVA (${config.ivaPorcentaje}%):`, 20, currentY + 28);
+
+        doc.text(`$${costos.costoPorConsumoUsd}`, 90, currentY + 16, { align: 'right' });
+        doc.text(`$${costos.costoPorDemandaUsd}`, 90, currentY + 22, { align: 'right' });
+        doc.text(`$${costos.costoIvaUsd}`, 90, currentY + 28, { align: 'right' });
+
+        // Totales
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text(`Total USD:`, 140, currentY + 16);
+        doc.setFontSize(14);
+        doc.setTextColor(40, 167, 69); 
+        doc.text(`$${costos.costoTotalUsd}`, 190, currentY + 16, { align: 'right' });
+        
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text(`Total Bs:`, 140, currentY + 28);
+        doc.setFontSize(11);
+        doc.text(`Bs ${costos.costoTotalBs}`, 190, currentY + 28, { align: 'right' });
+
+        // --- 6. PREVIEW EN NUEVA PESTAÑA (NO DESCARGA DIRECTA) ---
+        const stringBlob = doc.output('bloburl');
+        window.open(stringBlob, '_blank');
     }
 
     function debounce(func, wait) {
@@ -160,8 +270,7 @@ App.Consumo = (function(window, $) {
         };
     }
 
-    // --- Lógica del DOM y Autocompletado ---
-
+    // --- DOM & Autocomplete ---
     function configurarAutocompletado() {
         if (!$listaAparatos) return;
         $listaAparatos.autocomplete({
@@ -169,8 +278,7 @@ App.Consumo = (function(window, $) {
                 label: `${a.nombre} (${a.vatios}W, ${a.voltaje}V)`,
                 value: a.nombre
             })),
-            minLength: 2,
-            delay: 250,
+            minLength: 2, delay: 250,
             focus: (e, ui) => { e.preventDefault(); $(e.target).val(ui.item.label); },
             select: (e, ui) => {
                 e.preventDefault();
@@ -183,11 +291,8 @@ App.Consumo = (function(window, $) {
 
     function agregarDispositivo(dispositivo) {
         const existente = aparatosSeleccionados.find(a => a.nombre === dispositivo.nombre);
-        if (existente) {
-            existente.cantidad++;
-        } else {
-            aparatosSeleccionados.push({ ...dispositivo, cantidad: 1 });
-        }
+        if (existente) existente.cantidad++;
+        else aparatosSeleccionados.push({ ...dispositivo, cantidad: 1 });
         actualizarInterfaz();
     }
 
@@ -201,9 +306,7 @@ App.Consumo = (function(window, $) {
         $btnLimpiar.hide();
     }
 
-    // --- VISUALIZACIÓN ORIGINAL ---
     function actualizarInterfaz() {
-        // Usamos el contenedor cacheado
         $itemsContainer.empty();
         const diasMes = App.Config.data.diasMes;
 
@@ -212,17 +315,13 @@ App.Consumo = (function(window, $) {
             const fila = $(`
                 <div class="fila-item" data-indice="${indice}">
                     <div><strong>${aparato.nombre}</strong></div>
-                <div class="consumo-detalle">${aparato.vatios}W × ${aparato.cantidad} und × ${aparato.horasDiarias.toFixed(1)}h/día × ${diasMes} días</div>
+                    <div class="consumo-detalle">${aparato.vatios}W × ${aparato.cantidad} und × ${aparato.horasDiarias.toFixed(1)}h/día × ${diasMes} días</div>
                     <div style="margin-top: 10px;">
-                        <label for="cantidad-${indice}">Cantidad:</label>
-                        <input type="number" value="${aparato.cantidad}" id="cantidad-${indice}" class="input-cantidad" min="1">
-                        <label for="horas-${indice}">Horas/Día:</label>
-                        <input type="number" value="${aparato.horasDiarias.toFixed(1)}" id="horas-${indice}" class="input-horas" step="0.1" min="0">
-                        <button class="boton-remover" style="background: #dc3545;">Eliminar</button>
+                        <label>Cant: <input type="number" value="${aparato.cantidad}" class="input-cantidad" min="1" style="width:60px"></label>
+                        <label>H/D: <input type="number" value="${aparato.horasDiarias.toFixed(1)}" class="input-horas" step="0.1" min="0" style="width:60px"></label>
+                        <button class="boton-remover" style="background: #dc3545; padding: 5px 10px; font-size: 0.8em;">Eliminar</button>
                     </div>
-                    <div style="margin-top: 5px; color: #d63384;">
-                        Consumo mensual: <strong class="consumo-item">${consumo.toFixed(2)} kWh</strong>
-                    </div>
+                    <div style="margin-top: 5px; color: #d63384;">Mes: <strong class="consumo-item">${consumo.toFixed(2)} kWh</strong></div>
                 </div>
             `);
             $itemsContainer.append(fila);
@@ -231,24 +330,19 @@ App.Consumo = (function(window, $) {
         const debouncedUpdate = debounce(function() {
             const fila = $(this).closest('.fila-item');
             const indice = fila.data('indice');
-            const aparato = aparatosSeleccionados[indice];
-
-            if ($(this).hasClass('input-cantidad')) {
-                aparato.cantidad = Math.max(parseInt(this.value, 10) || 1, 1);
-            } else {
-                aparato.horasDiarias = Math.max(parseFloat(this.value) || 0, 0);
-            }
-
-            const nuevoConsumo = (aparato.vatios * aparato.cantidad * aparato.horasDiarias * diasMes) / 1000;
+            const item = aparatosSeleccionados[indice];
+            if ($(this).hasClass('input-cantidad')) item.cantidad = Math.max(parseInt(this.value)||1, 1);
+            else item.horasDiarias = Math.max(parseFloat(this.value)||0, 0);
+            
+            const nuevoConsumo = (item.vatios * item.cantidad * item.horasDiarias * diasMes) / 1000;
             fila.find('.consumo-item').text(`${nuevoConsumo.toFixed(2)} kWh`);
-            fila.find('.consumo-detalle').text(`${aparato.vatios}W × ${aparato.cantidad} und × ${aparato.horasDiarias.toFixed(1)}h/día × ${diasMes} días`);
+            fila.find('.consumo-detalle').text(`${item.vatios}W × ${item.cantidad} und × ${item.horasDiarias.toFixed(1)}h/día × ${diasMes} días`);
         }, 250);
 
         $('.input-cantidad, .input-horas').on('input', debouncedUpdate);
-
         $('.boton-remover').on('click', function() {
-            const indice = $(this).closest('.fila-item').data('indice');
-            aparatosSeleccionados.splice(indice, 1);
+            const idx = $(this).closest('.fila-item').data('indice');
+            aparatosSeleccionados.splice(idx, 1);
             actualizarInterfaz();
         });
 
@@ -256,80 +350,68 @@ App.Consumo = (function(window, $) {
         $btnLimpiar.toggle(aparatosSeleccionados.length > 0);
     }
 
-    // --- Lógica Principal de Cálculo (VISUALIZACIÓN RESTAURADA) ---
-
+    // --- CÁLCULOS PANTALLA PRINCIPAL ---
     function calcularConsumo() {
         const config = App.Config.data;
-        let potenciaActivaKwTotal = 0, consumoKwhMesTotal = 0, potenciaAparenteKvaTotal = 0;
+        let totalWatts = 0;
+        let totalKwhMes = 0;
+        let totalVA = 0;
 
         aparatosSeleccionados.forEach(a => {
-            const watts = a.vatios * a.cantidad;
-            const horas = a.horasDiarias * config.diasMes;
-            potenciaActivaKwTotal += watts / 1000;
-            consumoKwhMesTotal += (watts * horas) / 1000;
-            potenciaAparenteKvaTotal += (watts / a.factorPotencia) / 1000;
+            const w = a.vatios * a.cantidad;
+            const h = a.horasDiarias * config.diasMes;
+            
+            // Cálculo IDÉNTICO al PDF para consistencia
+            const fp = a.factorPotencia || 0.9;
+            
+            totalWatts += w;
+            totalKwhMes += (w * h) / 1000;
+            totalVA += w / fp;
         });
 
-        const ctcKva = Math.max(potenciaAparenteKvaTotal, 1);
-        const dacKva = ctcKva <= 5 ? ctcKva : Math.max(ctcKva * 0.4, 5);
+        const kvaTotal = totalVA / 1000;
+        const ctc = Math.max(kvaTotal, 1);
+        const ctcRedondeado = Math.round(ctc);
 
-        const costos = App.Utils.calculateCostos({
-            consumoKwhMes: consumoKwhMesTotal,
-            dacKva: dacKva
+        const dac = ctc <= 5 ? ctc : Math.max(ctc * 0.4, 5);
+        const dacRedondeado = Math.round(dac);
+
+        // Costos basados en valores redondeados (igual que PDF)
+        const costos = App.Utils.calculateCostos({ 
+            consumoKwhMes: totalKwhMes, 
+            dacKva: dacRedondeado 
         });
 
-        const tarifaResidencial = App.Utils.calculateTarifaResidencial(consumoKwhMesTotal);
-        const tarifaComercial = App.Utils.calculateTarifaComercial(dacKva);
+        const tarifaResidencial = App.Utils.calculateTarifaResidencial(totalKwhMes);
+        const tarifaComercial = App.Utils.calculateTarifaComercial(dacRedondeado);
 
-        estadoConsumo = {
-            ctcKva, dacKva,
-            consumoKwhMes: consumoKwhMesTotal,
-            consumoKwhDia: consumoKwhMesTotal / config.diasMes
+        estadoConsumo = { 
+            ctc: ctcRedondeado, 
+            dac: dacRedondeado, 
+            consumoKwhMes: totalKwhMes, 
+            consumoKwhDia: totalKwhMes / config.diasMes 
         };
 
-        // Usamos el div cacheado pero la estructura HTML original
+        // Renderizado
         $resultadoDiv.empty().append('<h3>Resultados Finales</h3>');
-        const contenedorResultados = $('<div>').addClass('contenedor-resultados');
+        const contenedor = $('<div class="contenedor-resultados"></div>');
+        function item(lbl, val, cls='valor') { return `<p class="item-resultado"><span class="etiqueta">${lbl}</span><span class="${cls}">${val}</span></p>`; }
+        
+        // Caja 1: Potencia y Tarifas (Mostrando Potencia Aparente kVA)
+        const col1 = $(`<div class="caja-resultado"><h4 class="titulo-caja">Potencia y Tarifas</h4>${item('Potencia Aparente:', kvaTotal.toFixed(2)+' kVA')}${item('Tarifa Residencial:', tarifaResidencial, 'valor valor-tarifa')}${item('Tarifa Comercial:', tarifaComercial, 'valor valor-tarifa')}</div>`);
+        
+        // Caja 2: Valores Concretos (Redondeados)
+        const col2 = $(`<div class="caja-resultado"><h4 class="titulo-caja">Valores Concretos</h4>${item('CTC:', ctcRedondeado+' kVA')}${item('DAC:', dacRedondeado+' kVA')}${item('Consumo Mensual:', totalKwhMes.toFixed(0)+' kWh', 'valor-destacado')}${item('Consumo Diario:', (totalKwhMes/config.diasMes).toFixed(2)+' kWh', 'valor-destacado')}</div>`);
+        
+        // Caja 3: Costos
+        const col3 = $(`<div class="caja-resultado"><h4 class="titulo-caja">Costos</h4>${item('Por Demanda:', '$'+costos.costoPorDemandaUsd)}${item('Por Energía:', '$'+costos.costoPorConsumoUsd)}${item('IVA:', '$'+costos.costoIvaUsd)}<p class="item-resultado-total"><span class="etiqueta-total">Total USD:</span><span class="valor-total">$${costos.costoTotalUsd}</span></p><p class="item-resultado-total"><span class="etiqueta-total">Total Bs:</span><span class="valor-total">${costos.costoTotalBs}</span></p></div>`);
 
-        function createResultItem(label, value, valueClass = 'valor') {
-            return $('<p>').addClass('item-resultado').append($('<span>').addClass('etiqueta').text(label)).append($('<span>').addClass(valueClass).text(value));
-        }
-        function createTotalResultItem(label, value) {
-            return $('<p>').addClass('item-resultado-total').append($('<span>').addClass('etiqueta-total').text(label)).append($('<span>').addClass('valor-total').text(value));
-        }
-
-        contenedorResultados.append(
-            $('<div>').addClass('caja-resultado').append('<h4>Potencia y Tarifas</h4>').append(
-                $('<div>').addClass('consumo-detalle')
-                    .append(createResultItem('Potencia Activa Total:', `${(potenciaActivaKwTotal * 1000).toLocaleString()} W`))
-                    .append(createResultItem('Tarifa Residencial:', tarifaResidencial, 'valor valor-tarifa'))
-                    .append(createResultItem('Tarifa Comercial:', tarifaComercial, 'valor valor-tarifa'))
-            ),
-            $('<div>').addClass('caja-resultado').append('<h4>Parámetros Técnicos</h4>').append(
-                $('<div>').addClass('consumo-detalle')
-                    .append(createResultItem('CTC:', `${estadoConsumo.ctcKva.toFixed(0)} kVA`))
-                    .append(createResultItem('DAC:', `${estadoConsumo.dacKva.toFixed(0)} kVA`))
-                    .append(createResultItem('Consumo Mensual:', `${estadoConsumo.consumoKwhMes.toFixed(0)} kWh/mes`, 'valor-destacado'))
-                    .append(createResultItem('Consumo Diario:', `${estadoConsumo.consumoKwhDia.toFixed(2)} kWh/día`, 'valor-destacado'))
-            ),
-            $('<div>').addClass('caja-resultado').append('<h4>Detalles de Costos</h4>').append(
-                $('<div>').addClass('consumo-detalle')
-                    .append(createResultItem('Por Demanda DAC:', `$${costos.costoPorDemandaUsd}`))
-                    .append(createResultItem('Por Kwh:', `$${costos.costoPorConsumoUsd}`))
-                    .append(createResultItem(`IVA (${config.ivaPorcentaje}%):`, `$${costos.costoIvaUsd}`))
-                    .append(createTotalResultItem('Por mes $ (USD):', `$${costos.costoTotalUsd}`))
-                    .append(createTotalResultItem('Por mes (Bs):', `${costos.costoTotalBs} Bs`))
-            )
-        );
-
-        $resultadoDiv.append(contenedorResultados);
+        contenedor.append(col1, col2, col3);
+        $resultadoDiv.append(contenedor);
         $btnExportarPdf.removeClass('oculto');
     }
 
-    // --- Inicialización y API Pública ---
-
     function init() {
-        // Inicializar caché de variables DOM
         $itemsContainer = $('#items-seleccionados');
         $listaAparatos = $('#lista-aparatos');
         $btnExportarPdf = $('#exportar-pdf');
@@ -340,22 +422,11 @@ App.Consumo = (function(window, $) {
         cargarCatalogoDesdeStorage();
 
         $(document).on('click', '#exportar-pdf', async function() {
-            if (aparatosSeleccionados.length === 0) {
-                alert('Seleccione al menos un aparato antes de exportar.');
-                return;
-            }
-            const btn = $(this).prop('disabled', true).text('Generando PDF...');
+            const btn = $(this).prop('disabled', true).html('Generando Vista Previa...');
             $('body').addClass('wait-cursor');
-            try {
-                // Aquí ocurre la magia de la carga diferida
-                await exportarAPDF();
-            } catch (error) {
-                console.error("Error fatal al generar el PDF:", error);
-                alert("Ocurrió un error al generar el PDF. Revise la consola.");
-            } finally {
-                btn.prop('disabled', false).text('Exportar PDF');
-                $('body').removeClass('wait-cursor');
-            }
+            try { await exportarAPDF(); } 
+            catch (error) { alert("Error PDF: " + error.message); } 
+            finally { btn.prop('disabled', false).html('Exportar PDF'); $('body').removeClass('wait-cursor'); }
         });
 
         $btnLimpiar.on('click', limpiarTodo);
@@ -364,7 +435,6 @@ App.Consumo = (function(window, $) {
 
     $(document).ready(init);
 
-    // API Pública del módulo
     return {
         refreshAutocomplete: function() { cargarCatalogoDesdeStorage(); },
         refreshCatalog: function() { cargarCatalogoDesdeStorage(); }
