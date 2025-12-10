@@ -44,9 +44,9 @@
         <div class="top-bar">
             <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                 <div class="pestanas">
-                    <button class="pestana-btn active" data-pestana="consumo">Censo de Carga</button>
-                    <button class="pestana-btn" data-pestana="corrientes">Cálculo por Corrientes</button>
-                    <button class="pestana-btn" data-pestana="facturas">Facturación</button>
+                    <button class="pestana-btn active" data-pestana="consumo">Censo</button>
+                    <button class="pestana-btn" data-pestana="corrientes">Medición</button>
+                    <button class="pestana-btn" data-pestana="facturas">Lecturas</button>
                 </div>
                 <div style="display: flex; align-items: center; gap: 20px;">
                     <div id="usuario-activo" class="usuario-activo"></div>
@@ -67,7 +67,7 @@
                         
                                 <!-- ========= CONTENIDO PESTAÑA CONSUMO ========= -->
                                 <div id="consumo" class="contenido-pestana active">
-                                    <h1>Calculadora de Consumo Eléctrico</h1>
+                                    <h1>Censo de Carga</h1>
                         
                                     <div class="grupo-input">
                                         <div style="flex-grow: 1;">
@@ -99,7 +99,7 @@
                         
                                 <!-- ========= CONTENIDO PESTAÑA CORRIENTES ========= -->
                                 <div id="corrientes" class="contenido-pestana">
-                                    <h1>Cálculo por Corrientes</h1>
+                                    <h1>Cálculo por Medición</h1>
                         
                                     <div class="grupo-input">
                                         <div>
@@ -144,7 +144,7 @@
                                     <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
                                         <button id="boton-calcular-corrientes">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/></svg>
-                                            Calcular
+                                            Calcular Medición
                                         </button>
                                         <button id="boton-limpiar-corrientes" style="background: #dc3545; display: none;">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
@@ -157,12 +157,12 @@
                         
                                 <!-- ========= CONTENIDO PESTAÑA FACTURAS ========= -->
                                 <div id="facturas" class="contenido-pestana">
-                                    <h1>Facturación</h1>
+                                    <h1>Control de Lecturas</h1>
                         
                                     <div class="fact-tabs">
                                         <div class="fact-tab-buttons">
-                                            <button class="fact-tab-btn active" data-tab="fecha-instalacion">Por Fecha de Instalación</button>
-                                            <button class="fact-tab-btn" data-tab="ctc">Por Carga Total Conectada (CTC)</button>
+                                            <button class="fact-tab-btn active" data-tab="fecha-instalacion">Por Medidor</button>
+                                            <button class="fact-tab-btn" data-tab="ctc">Por Capacidad</button>
                                         </div>
                                     </div>
                         
@@ -194,7 +194,7 @@
                                         <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
                                             <button id="calcular-fecha-instalacion">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/></svg>
-                                                Calcular
+                                                Calcular Lectura
                                             </button>
                                         </div>
                                     </div>
@@ -209,7 +209,7 @@
                                         <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
                                             <button id="calcular-ctc">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/></svg>
-                                                Calcular
+                                                Calcular Proyección
                                             </button>
                                         </div>
                                     </div>
@@ -451,26 +451,27 @@
     <!-- ========= BARRA DE NAVEGACIÓN MÓVIL ========= -->
     <nav class="bottom-nav">
         <button class="nav-item active" data-pestana="consumo">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
-                <path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8zm0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zM4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-clipboard-data" viewBox="0 0 16 16">
+                <path d="M4 11a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0v-1zm6-4a1 1 0 1 1 2 0v5a1 1 0 1 1-2 0V7zM7 9a1 1 0 0 1 2 0v3a1 1 0 1 1-2 0V9z"/>
+                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3z"/>
             </svg>
             Censo
         </button>
 
         <button class="nav-item" data-pestana="corrientes">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-lightning-charge" viewBox="0 0 16 16">
                 <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
             </svg>
-            Corrientes
+            Medición
         </button>
 
         <button class="nav-item" data-pestana="facturas">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M4 0h5.293A1 1 0 0 1 10 .293L13.707 4a1 1 0 0 1 .293.707V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm5.5 1.5v2a1 1 0 0 0 1 1h2l-3-3z"/>
-                <path d="M4.5 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-speedometer2" viewBox="0 0 16 16">
+                <path d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zM3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10zm9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5zm.754-4.246a.5.5 0 0 1 0 .708l-.914.915a.5.5 0 1 1-.708-.708l.915-.914a.5.5 0 0 1 .707 0zM12 10a.5.5 0 0 1 .5.5v1.5a.5.5 0 0 1-1 0v-1.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M8 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM6.354 5.646a.5.5 0 1 1 .708-.708l2.146 2.147a.5.5 0 0 1-.707.708L6.354 5.646z"/>
             </svg>
-            Facturas
+            Lecturas
         </button>
 
         <button class="nav-item" data-pestana="configuracion">
