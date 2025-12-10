@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calc-energia-v2'; // Incrementé la versión para forzar actualización
+const CACHE_NAME = 'calc-energia-v3'; // Incrementé la versión para forzar actualización
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const ASSETS_TO_CACHE = [
   './Scripts/artefactos.js',
   './Scripts/consumo.js',
   './Scripts/corrientes.js',
-  './Scripts/facturas.js',
+  './Scripts/lecturas.js',
   
   // Librerías Core (jQuery)
   'https://code.jquery.com/jquery-3.6.0.min.js',

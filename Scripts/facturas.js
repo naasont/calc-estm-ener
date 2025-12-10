@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿(function(App) {
+﻿﻿﻿﻿﻿﻿﻿﻿(function(App) {
     'use strict';
 
     function mostrarError(mensaje) {
@@ -171,13 +171,13 @@
             return mostrarError('El período entre fechas no puede ser mayor a 5 años.');
         }
         if (isNaN(lecturaInstalacion) || lecturaInstalacion < 0) {
-            return mostrarError('La lectura de instalación debe ser un número positivo o cero.');
+            return mostrarError('La lectura de inicio debe ser un número positivo o cero.');
         }
         if (isNaN(lecturaContador) || lecturaContador <= 0) {
-            return mostrarError('La lectura del contador debe ser un número mayor que cero.');
+            return mostrarError('La lectura actual debe ser un número mayor que cero.');
         }
         if (lecturaContador <= lecturaInstalacion) {
-            return mostrarError('La lectura del contador debe ser mayor que la lectura de instalación.');
+            return mostrarError('La lectura actual debe ser mayor que la lectura de inicio.');
         }
 
         const diferenciaDias = Math.ceil((fechaActual - fechaInstalacion) / (1000 * 60 * 60 * 24));
@@ -203,7 +203,7 @@
         });
 
         resultadoFacturas.innerHTML = `
-            <h3>Resultados de Facturación por Fecha de Instalación</h3>
+            <h3>Resultados de Facturación por Fecha de Inicio</h3>
             <div class="contenedor-resultados">
                 <div class="caja-resultado">
                     <h3 class="titulo-caja">Tarifas</h3>
@@ -263,7 +263,7 @@
         const fechaActual = new Date(fechaActualInput.value + 'T00:00:00');
 
         if (fechaInstalacion > fechaActual) {
-            mostrarErrorInline('fecha-instalacion', 'La fecha de instalación no puede ser posterior a la fecha actual.');
+            mostrarErrorInline('fecha-instalacion', 'La fecha de inicio no puede ser posterior a la fecha actual.');
             esValido = false;
         }
 

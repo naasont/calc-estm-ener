@@ -52,7 +52,7 @@ window.renderUsersList = function() {
             <input type="checkbox" data-user="${user.username}" data-field="isActive" ${user.isActive ? 'checked' : ''}>
             <input type="checkbox" data-user="${user.username}" data-field="consumo" ${user.permissions.consumo ? 'checked' : ''}>
             <input type="checkbox" data-user="${user.username}" data-field="corrientes" ${user.permissions.corrientes ? 'checked' : ''}>
-            <input type="checkbox" data-user="${user.username}" data-field="facturas" ${user.permissions.facturas ? 'checked' : ''}>
+            <input type="checkbox" data-user="${user.username}" data-field="lecturas" ${user.permissions.lecturas ? 'checked' : ''}>
             <input type="checkbox" data-user="${user.username}" data-field="configuracion" ${user.permissions.configuracion ? 'checked' : ''}>
             <button class="delete-user-btn" data-user="${user.username}">Borrar</button>
         `;
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Determinar pestaña inicial
         let defaultTab = 'consumo';
         if (!App.Auth.hasPermission(defaultTab)) {
-            const modulos = ['corrientes', 'facturas', 'configuracion'];
+            const modulos = ['corrientes', 'lecturas', 'configuracion'];
             const allowed = modulos.find(m => App.Auth.hasPermission(m));
             if (allowed) {
                 defaultTab = allowed;
@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 username: username,
                 password: hashedPassword,
                 isActive: true,
-                permissions: { consumo: true, corrientes: true, facturas: true, configuracion: false }
+                permissions: { consumo: true, corrientes: true, lecturas: true, configuracion: false }
             };
             App.Auth.users.push(newUser);
             App.Auth.saveUsers();

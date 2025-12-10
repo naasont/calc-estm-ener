@@ -46,7 +46,7 @@
                 <div class="pestanas">
                     <button class="pestana-btn active" data-pestana="consumo">Censo</button>
                     <button class="pestana-btn" data-pestana="corrientes">Medición</button>
-                    <button class="pestana-btn" data-pestana="facturas">Lecturas</button>
+                    <button class="pestana-btn" data-pestana="lecturas">Lecturas</button>
                 </div>
                 <div style="display: flex; align-items: center; gap: 20px;">
                     <div id="usuario-activo" class="usuario-activo"></div>
@@ -155,21 +155,21 @@
                                     <div id="resultado-corrientes" class="oculto" aria-live="polite"></div>
                                 </div>
                         
-                                <!-- ========= CONTENIDO PESTAÑA FACTURAS ========= -->
-                                <div id="facturas" class="contenido-pestana">
+                                <!-- ========= CONTENIDO PESTAÑA LECTURAS ========= -->
+                                <div id="lecturas" class="contenido-pestana">
                                     <h1>Control de Lecturas</h1>
                         
-                                    <div class="fact-tabs">
-                                        <div class="fact-tab-buttons">
-                                            <button class="fact-tab-btn active" data-tab="fecha-instalacion">Por Medidor</button>
-                                            <button class="fact-tab-btn" data-tab="ctc">Por Capacidad</button>
+                                    <div class="lect-tabs">
+                                        <div class="lect-tab-buttons">
+                                            <button class="lect-tab-btn active" data-tab="fecha-instalacion">Por Medidor</button>
+                                            <button class="lect-tab-btn" data-tab="ctc">Por Capacidad</button>
                                         </div>
                                     </div>
                         
-                                    <div id="formulario-fecha-instalacion" class="fact-tab-content">
+                                    <div id="formulario-fecha-instalacion" class="lect-tab-content">
                                         <div class="grupo-input">
                                             <div>
-                                                <label for="fecha-instalacion">Fecha de Instalación:</label>
+                                                <label for="fecha-instalacion">Fecha de Inicio:</label>
                                                 <input type="date" id="fecha-instalacion" class="input-config" aria-describedby="fecha-instalacion-error">
                                                 <small id="fecha-instalacion-error" class="error-message-inline" aria-live="polite"></small>
                                             </div>
@@ -179,16 +179,16 @@
                                                 <small id="fecha-actual-error" class="error-message-inline" aria-live="polite"></small>
                                             </div>
                                             <div>
-                                                <label for="lectura-instalacion">Lectura de Instalación:</label>
+                                                <label for="lectura-instalacion">Lectura de Inicio:</label>
                                                 <input type="number" id="lectura-instalacion" class="input-config">
                                             </div>
                                             <div>
-                                                <label for="lectura-contador">Lectura del Contador:</label>
+                                                <label for="lectura-contador">Lectura Actual:</label>
                                                 <input type="number" id="lectura-contador" class="input-config">
                                             </div>
                                             <div>
-                                                <label for="multiplicador-factura">Multiplicador:</label>
-                                                <input type="number" id="multiplicador-factura" class="input-config" value="1" step="any">
+                                                <label for="multiplicador-lectura">Multiplicador:</label>
+                                                <input type="number" id="multiplicador-lectura" class="input-config" value="1" step="any">
                                             </div>
                                         </div>
                                         <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
@@ -199,10 +199,21 @@
                                         </div>
                                     </div>
                         
-                                    <div id="formulario-ctc" class="fact-tab-content">
+                                    <div id="formulario-ctc" class="lect-tab-content">
+                                        <div class="grupo-input" style="align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px;">
+                                            <label style="min-width: auto; margin-right: 15px;">Tipo de Entrada:</label>
+                                            <div>
+                                                <input type="radio" id="tipo-entrada-ctc" name="tipo-entrada-capacidad" value="ctc" checked>
+                                                <label for="tipo-entrada-ctc" style="min-width: auto; font-weight: normal; margin-right: 10px; cursor: pointer;">Ingresar CTC (Carga Total Conectada)</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" id="tipo-entrada-cti" name="tipo-entrada-capacidad" value="cti">
+                                                <label for="tipo-entrada-cti" style="min-width: auto; font-weight: normal; cursor: pointer;">Ingresar CTI (Capacidad Total Instalada)</label>
+                                            </div>
+                                        </div>
                                         <div class="grupo-input">
                                             <div>
-                                                <label for="ctc-input">CTC (kVA):</label>
+                                                <label for="ctc-input" id="label-ctc-input">CTC (kVA):</label>
                                                 <input type="number" id="ctc-input" class="input-config">
                                             </div>
                                         </div>
@@ -215,13 +226,13 @@
                                     </div>
                         
                                     <div class="grupo-input" style="justify-content: flex-start; margin-top: 15px;">
-                                        <button id="boton-limpiar-facturas" style="background: #dc3545; display: none;">
+                                        <button id="boton-limpiar-lecturas" style="background: #dc3545; display: none;">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
                                             Limpiar Todo
                                         </button>
                                     </div>
                         
-                                    <div id="resultado-facturas" style="margin-top: 20px;" aria-live="polite"></div>
+                                    <div id="resultado-lecturas" style="margin-top: 20px;" aria-live="polite"></div>
                                 </div>
                         
                                 <!-- ========= CONTENIDO PESTAÑA CONFIGURACIÓN ========= -->
@@ -331,7 +342,7 @@
                                             <span>Activo</span>
                                             <span>Censo</span>
                                             <span>Corrientes</span>
-                                            <span>Facturación</span>
+                                            <span>Lecturas</span>
                                             <span>Configuración</span>
                                         </div>
                                         <div id="users-list">
@@ -466,7 +477,7 @@
             Medición
         </button>
 
-        <button class="nav-item" data-pestana="facturas">
+        <button class="nav-item" data-pestana="lecturas">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-speedometer2" viewBox="0 0 16 16">
                 <path d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zM3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10zm9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5zm.754-4.246a.5.5 0 0 1 0 .708l-.914.915a.5.5 0 1 1-.708-.708l.915-.914a.5.5 0 0 1 .707 0zM12 10a.5.5 0 0 1 .5.5v1.5a.5.5 0 0 1-1 0v-1.5a.5.5 0 0 1 .5-.5z"/>
                 <path d="M8 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM6.354 5.646a.5.5 0 1 1 .708-.708l2.146 2.147a.5.5 0 0 1-.707.708L6.354 5.646z"/>
@@ -488,7 +499,7 @@
     <script src="Scripts/artefactos.js?v=2"></script>
     <script src="Scripts/consumo.js?v=2"></script>
     <script src="Scripts/corrientes.js?v=2"></script>
-    <script src="Scripts/facturas.js?v=2"></script>
+    <script src="Scripts/lecturas.js?v=2"></script>
 
     <!-- Service Worker Registration -->
     <script>

@@ -278,7 +278,21 @@ App.Auth = {
     loadUsers() {
         const raw = localStorage.getItem(App.Constants.LS_KEYS.USERS);
         if (raw) {
-            try { this.users = JSON.parse(raw); } 
+            try { 
+                this.users = JSON.parse(raw); 
+                // Migración para usuarios antiguos con permiso 'facturas'
+                let permissionsUpdated = false;
+                this.users.forEach(user => {
+                    if (user.permissions && user.permissions.hasOwnProperty('facturas')) {
+                        user.permissions.lecturas = user.permissions.facturas;
+                        delete user.permissions.facturas;
+                        permissionsUpdated = true;
+                    }
+                });
+                if (permissionsUpdated) {
+                    this.saveUsers();
+                }
+            } 
             catch (e) { this.createDefaultAdmin(); }
         } else { this.createDefaultAdmin(); }
     },
@@ -289,13 +303,13 @@ App.Auth = {
                 username: 'admin',
                 password: App.Constants.ADMIN_HASH, // Este es el hash SHA-256 real
                 isActive: true,
-                permissions: { consumo: true, corrientes: true, facturas: true, configuracion: true }
+                permissions: { consumo: true, corrientes: true, lecturas: true, configuracion: true }
             },
             {
                 username: 'invitado',
                 password: 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
                 isActive: true,
-                permissions: { consumo: true, corrientes: true, facturas: true, configuracion: false }
+                permissions: { consumo: true, corrientes: true, lecturas: true, configuracion: false }
             }
         ];
         this.saveUsers();

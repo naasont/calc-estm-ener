@@ -73,19 +73,19 @@ body.wait-cursor, body.wait-cursor * {
     margin-right: 6px;
 }
 
-/* Estilos para las pestañas de Facturación */
-.fact-tabs {
+/* Estilos para las pestañas de Lecturas */
+.lect-tabs {
     margin: 20px 0;
     border-bottom: 1px solid #dee2e6;
 }
 
-.fact-tab-buttons {
+.lect-tab-buttons {
     display: flex;
     gap: 2px;
     margin-bottom: -1px;
 }
 
-.fact-tab-btn {
+.lect-tab-btn {
     padding: 12px 24px;
     background: #f8f9fa;
     border: 1px solid #dee2e6;
@@ -97,12 +97,12 @@ body.wait-cursor, body.wait-cursor * {
     color: #6c757d;
 }
 
-.fact-tab-btn:hover {
+.lect-tab-btn:hover {
     background: #e9ecef;
     color: #495057;
 }
 
-.fact-tab-btn.active {
+.lect-tab-btn.active {
     background: #fff;
     color: #007bff;
     border-color: #dee2e6;
@@ -111,7 +111,7 @@ body.wait-cursor, body.wait-cursor * {
     font-weight: 600;
 }
 
-.fact-tab-content {
+.lect-tab-content {
     display: none;
     padding: 20px;
     background: #fff;
@@ -120,7 +120,7 @@ body.wait-cursor, body.wait-cursor * {
     border-radius: 0 0 8px 8px;
 }
 
-.fact-tab-content.active {
+.lect-tab-content.active {
     display: block;
     animation: fadeIn 0.3s ease;
 }
@@ -1158,7 +1158,7 @@ label.btn-importar svg,
     }
 
     /* Ocultar elementos no deseados */
-    .top-bar, .pestanas, button, .modal, .login-box, .dropdown-menu-container, .fact-tab-buttons {
+    .top-bar, .pestanas, button, .modal, .login-box, .dropdown-menu-container, .lect-tab-buttons {
         display: none !important;
     }
 
@@ -1172,8 +1172,8 @@ label.btn-importar svg,
         box-shadow: none !important;
     }
 
-    /* Asegurar que el contenido de las sub-pestañas de facturación sea visible al imprimir */
-    .fact-tab-content {
+    /* Asegurar que el contenido de las sub-pestañas de lecturas sea visible al imprimir */
+    .lect-tab-content {
         display: block !important;
     }
 
