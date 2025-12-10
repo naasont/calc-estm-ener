@@ -219,7 +219,7 @@ App.Utils = {
     },
 
     calculateTarifaResidencial(kwh) { return kwh < 200 ? 'TR1' : (kwh < 500 ? 'TR2' : 'TR3'); },
-    calculateTarifaComercial(dacKva) { return dacKva <= 10 ? 'G01' : (dacKva <= 30 ? 'G02' : 'G03'); },
+    calculateTarifaComercial(dacKva) { return dacKva <= 10 ? '0106G01' : (dacKva <= 30 ? '0106G02' : '0106G03'); },
     
     calculateCostos({ consumoKwhMes, dacKva }) {
         const cfg = App.Config.data;

@@ -111,7 +111,7 @@
         cajaParametros.className = 'caja-resultado';
         const tituloParametros = document.createElement('h3');
         tituloParametros.className = 'titulo-caja';
-        tituloParametros.textContent = 'Parámetros Técnicos';
+        tituloParametros.textContent = 'Valores Concretos';
         cajaParametros.appendChild(tituloParametros);
         cajaParametros.appendChild(createResultItem('CTC:', `${ctcKva.toFixed(0)} kVA`));
         cajaParametros.appendChild(createResultItem('DAC:', `${dacKva.toFixed(0)} kVA`));

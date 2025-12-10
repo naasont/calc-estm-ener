@@ -113,7 +113,7 @@
                     <p class="item-resultado"><span class="etiqueta">Tarifa Comercial:</span><span class="valor valor-tarifa">${tarifaComercial}</span></p>
                 </div>
                 <div class="caja-resultado">
-                    <h4 class="titulo-caja">Parámetros Técnicos</h4>
+                    <h4 class="titulo-caja">Valores Concretos</h4>
                     <p class="item-resultado"><span class="etiqueta">CTC Ingresado:</span><span class="valor">${ctc.toFixed(0)} kVA</span></p>
                     <p class="item-resultado"><span class="etiqueta">DAC Calculado:</span><span class="valor">${dacKva.toFixed(0)} kVA</span></p>
                     <p class="item-resultado"><span class="etiqueta">Consumo Mensual:</span><span class="valor-destacado">${consumoKwhMes.toFixed(0)} kWh</span></p>
@@ -211,7 +211,7 @@
                     <p class="item-resultado"><span class="etiqueta">Tarifa Comercial:</span><span class="valor valor-tarifa">${App.Utils.calculateTarifaComercial(dacKva)}</span></p>
                 </div>
                 <div class="caja-resultado">
-                    <h3 class="titulo-caja">Parámetros</h3>
+                    <h3 class="titulo-caja">Valores Concretos</h3>
                     <p class="item-resultado"><span class="etiqueta">CTC Calculado:</span><span class="valor">${ctcKva.toFixed(0)} kVA</span></p>
                     <p class="item-resultado"><span class="etiqueta">DAC Calculado:</span><span class="valor">${dacKva.toFixed(0)} kVA</span></p>
                     

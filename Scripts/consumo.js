@@ -337,13 +337,24 @@ App.Consumo = (function(window, $) {
             const nuevoConsumo = (item.vatios * item.cantidad * item.horasDiarias * diasMes) / 1000;
             fila.find('.consumo-item').text(`${nuevoConsumo.toFixed(2)} kWh`);
             fila.find('.consumo-detalle').text(`${item.vatios}W × ${item.cantidad} und × ${item.horasDiarias.toFixed(1)}h/día × ${diasMes} días`);
-        }, 250);
+
+            // ¡Llamada clave para actualizar los resultados globales!
+            if (aparatosSeleccionados.length > 0) {
+                calcularConsumo();
+            }
+        }, 300); // Un ligero aumento del debounce puede ser beneficioso
 
         $('.input-cantidad, .input-horas').on('input', debouncedUpdate);
         $('.boton-remover').on('click', function() {
             const idx = $(this).closest('.fila-item').data('indice');
             aparatosSeleccionados.splice(idx, 1);
             actualizarInterfaz();
+            // Recalcular también al eliminar
+            if (aparatosSeleccionados.length > 0) {
+                calcularConsumo();
+            } else {
+                limpiarTodo(); // Si no quedan aparatos, limpiar la pantalla
+            }
         });
 
         $btnCalcular.toggleClass('oculto', aparatosSeleccionados.length === 0);
@@ -370,6 +381,7 @@ App.Consumo = (function(window, $) {
         });
 
         const kvaTotal = totalVA / 1000;
+        const potenciaActivaKw = totalWatts / 1000;
         const ctc = Math.max(kvaTotal, 1);
         const ctcRedondeado = Math.round(ctc);
 
@@ -398,7 +410,7 @@ App.Consumo = (function(window, $) {
         function item(lbl, val, cls='valor') { return `<p class="item-resultado"><span class="etiqueta">${lbl}</span><span class="${cls}">${val}</span></p>`; }
         
         // Caja 1: Potencia y Tarifas (Mostrando Potencia Aparente kVA)
-        const col1 = $(`<div class="caja-resultado"><h4 class="titulo-caja">Potencia y Tarifas</h4>${item('Potencia Aparente:', kvaTotal.toFixed(2)+' kVA')}${item('Tarifa Residencial:', tarifaResidencial, 'valor valor-tarifa')}${item('Tarifa Comercial:', tarifaComercial, 'valor valor-tarifa')}</div>`);
+        const col1 = $(`<div class="caja-resultado"><h4 class="titulo-caja">Potencia y Tarifas</h4>${item('Potencia Aparente:', kvaTotal.toFixed(2)+' kVA')}${item('Potencia Activa:', potenciaActivaKw.toFixed(2)+' kW')}${item('Tarifa Residencial:', tarifaResidencial, 'valor valor-tarifa')}${item('Tarifa Comercial:', tarifaComercial, 'valor valor-tarifa')}</div>`);
         
         // Caja 2: Valores Concretos (Redondeados)
         const col2 = $(`<div class="caja-resultado"><h4 class="titulo-caja">Valores Concretos</h4>${item('CTC:', ctcRedondeado+' kVA')}${item('DAC:', dacRedondeado+' kVA')}${item('Consumo Mensual:', totalKwhMes.toFixed(0)+' kWh', 'valor-destacado')}${item('Consumo Diario:', (totalKwhMes/config.diasMes).toFixed(2)+' kWh', 'valor-destacado')}</div>`);
