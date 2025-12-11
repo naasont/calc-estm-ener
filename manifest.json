@@ -8,12 +8,12 @@
   "description": "Calculadora de consumo eléctrico offline.",
   "icons": [
     {
-      "src": "icon.png", 
+      "src": "Assets/icons/icon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon.png",
+      "src": "Assets/icons/icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }

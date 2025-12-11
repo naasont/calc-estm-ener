@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calc-energia-v3'; // Incrementé la versión para forzar actualización
+const CACHE_NAME = 'calc-energia-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -9,6 +9,8 @@ const ASSETS_TO_CACHE = [
   './Scripts/consumo.js',
   './Scripts/corrientes.js',
   './Scripts/lecturas.js',
+  './Assets/icons/icon.png',
+  './Assets/images/logo.svg',
   
   // Librerías Core (jQuery)
   'https://code.jquery.com/jquery-3.6.0.min.js',
@@ -17,10 +19,7 @@ const ASSETS_TO_CACHE = [
 
   // Librerías PDF (Agregadas para que funcionen Offline)
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js',
-
-  // Iconos (Idealmente deberías descargarlos, pero esto ayuda si el CDN lo permite)
-  'https://cdn-icons-png.flaticon.com/512/2933/2933886.png'
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js'
 ];
 
 // Instalación: Cachear TODO lo crítico

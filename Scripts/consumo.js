@@ -46,7 +46,7 @@ App.Consumo = (function(window, $) {
     async function getLogoDataUrl() {
         if (_cachedLogoBase64) return _cachedLogoBase64;
         try {
-            const response = await fetch('Logo/logo.svg');
+            const response = await fetch('Assets/images/logo.svg');
             if (!response.ok) throw new Error("Logo no encontrado");
             const svgText = await response.text();
             return new Promise((resolve) => {
