@@ -81,48 +81,75 @@
         const tipoEntrada = document.querySelector('input[name="tipo-entrada-capacidad"]:checked').value;
         const valorInput = document.getElementById('ctc-input').value;
         const valorNumerico = parseFloat(valorInput);
-
+ 
         if (!valorInput || isNaN(valorNumerico) || valorNumerico <= 0) {
             const tipoTexto = tipoEntrada.toUpperCase();
             return mostrarError(`Por favor, introduce un valor válido y positivo para ${tipoTexto} (kVA).`);
         }
-
+ 
         let ctc;
         let ctiIngresadoHtml = '';
-
+ 
         if (tipoEntrada === 'cti') {
             ctc = valorNumerico * 0.80;
             ctiIngresadoHtml = `<p class="item-resultado"><span class="etiqueta">CTI Ingresado:</span><span class="valor">${valorNumerico.toFixed(2)} kVA</span></p>`;
         } else {
             ctc = valorNumerico;
         }
- 
+  
         const ctcMinimo = 0.1;
         const ctcMaximo = 5000;
         if (ctc < ctcMinimo || ctc > ctcMaximo) {
             return mostrarError(`El CTC calculado (${ctc.toFixed(2)} kVA) debe estar entre ${ctcMinimo} y ${ctcMaximo} kVA.`);
         }
-
+ 
+        // Cálculos comunes
         const config = App.Config.data;
         const dacKva = ctc <= 5 ? ctc : Math.max(ctc * 0.4, 5);
         const consumoKwhMes = dacKva * config.horasMes;
         const consumoKwhDia = consumoKwhMes / config.diasMes;
- 
-        const costos = App.Utils.calculateCostos({
-            consumoKwhMes: consumoKwhMes,
-            dacKva: dacKva
-        });
- 
+        const costos = App.Utils.calculateCostos({ consumoKwhMes, dacKva });
         const tarifaResidencial = App.Utils.calculateTarifaResidencial(consumoKwhMes);
         const tarifaComercial = App.Utils.calculateTarifaComercial(dacKva);
  
+        // Partes condicionales
+        let tituloCaja1 = 'Tarifas';
+        let corrientesHtml = '';
+ 
+        if (tipoEntrada === 'cti') {
+            const esTrifasico = document.getElementById('check-trifasico').checked;
+            const valorVa = valorNumerico * 1000;
+            let corriente1, corriente2, etiquetaCorriente1, etiquetaCorriente2;
+ 
+            tituloCaja1 = 'Tarifas y Corrientes';
+ 
+            if (esTrifasico) {
+                corriente1 = valorVa / (208 * Math.sqrt(3));
+                etiquetaCorriente1 = "Corriente (208V Trifásico):";
+                corriente2 = valorVa / (440 * Math.sqrt(3));
+                etiquetaCorriente2 = "Corriente (440V Trifásico):";
+            } else {
+                corriente1 = valorVa / 120;
+                etiquetaCorriente1 = "Corriente (120V Monofásico):";
+                corriente2 = valorVa / 240;
+                etiquetaCorriente2 = "Corriente (240V Monofásico):";
+            }
+            
+            corrientesHtml = `
+                <p class="item-resultado"><span class="etiqueta">${etiquetaCorriente1}</span><span class="valor">${corriente1.toFixed(2)} A</span></p>
+                <p class="item-resultado"><span class="etiqueta">${etiquetaCorriente2}</span><span class="valor">${corriente2.toFixed(2)} A</span></p>
+            `;
+        }
+ 
+        // Renderizado final
         resultadoLecturas.innerHTML = `
             <h3>Resultados de Lecturas (Por Capacidad)</h3>
             <div class="contenedor-resultados">
                 <div class="caja-resultado">
-                    <h4 class="titulo-caja">Tarifas</h4>
+                    <h4 class="titulo-caja">${tituloCaja1}</h4>
                     <p class="item-resultado"><span class="etiqueta">Tarifa Residencial:</span><span class="valor valor-tarifa">${tarifaResidencial}</span></p>
                     <p class="item-resultado"><span class="etiqueta">Tarifa Comercial:</span><span class="valor valor-tarifa">${tarifaComercial}</span></p>
+                    ${corrientesHtml}
                 </div>
                 <div class="caja-resultado">
                     <h4 class="titulo-caja">Valores Concretos</h4>
@@ -300,14 +327,17 @@
         const lectTabBtns = document.querySelectorAll('.lect-tab-btn');
         const ctcInputLabel = document.getElementById('label-ctc-input');
         const tipoEntradaRadios = document.querySelectorAll('input[name="tipo-entrada-capacidad"]');
+        const contenedorTrifasico = document.getElementById('contenedor-check-trifasico');
 
-        if (tipoEntradaRadios && ctcInputLabel) {
+        if (tipoEntradaRadios && ctcInputLabel && contenedorTrifasico) {
             tipoEntradaRadios.forEach(radio => {
                 radio.addEventListener('change', function() {
                     if (this.value === 'cti') {
                         ctcInputLabel.textContent = 'CTI (kVA):';
+                        contenedorTrifasico.style.display = 'flex';
                     } else {
                         ctcInputLabel.textContent = 'CTC (kVA):';
+                        contenedorTrifasico.style.display = 'none';
                     }
                 });
             });
@@ -356,6 +386,11 @@
 
         if (botonLimpiarLecturas) {
             botonLimpiarLecturas.addEventListener('click', limpiarLecturas);
+        }
+
+        // Estado inicial del checkbox: CTC está seleccionado por defecto, así que se oculta.
+        if (contenedorTrifasico) {
+            contenedorTrifasico.style.display = 'none';
         }
     }
 
