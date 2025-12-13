@@ -176,26 +176,85 @@ App.Config = {
         return new Promise((resolve, reject) => {
             const fileName = file.name.toLowerCase();
             const reader = new FileReader();
-            // Lógica simplificada de importación para brevedad, asumiendo Excel y JSON
-            if (fileName.endsWith('.json')) {
+            
+            // Restauramos soporte completo (Excel + JSON) como en la v2.2
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv')) {
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        if (typeof XLSX === 'undefined') throw new Error("Librería XLSX no cargada (SheetJS).");
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        // Lógica de detección de cabecera
+                        let headerRowIndex = -1;
+                        for (let i = 0; i < rawData.length; i++) {
+                            const rowStr = JSON.stringify(rawData[i]).toUpperCase().replace(/\s/g, '');
+                            if (rowStr.includes("APARATO") || rowStr.includes("WATT")) { headerRowIndex = i; break; }
+                        }
+                        if (headerRowIndex === -1) headerRowIndex = 0;
+                        
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: headerRowIndex, defval: "" });
+                        if (jsonData.length === 0) throw new Error("Archivo vacío.");
+                        
+                        // Mapeo inteligente
+                        const getValue = (row, keywords) => {
+                            const normalizedKeys = Object.keys(row).reduce((acc, key) => { acc[key.toUpperCase().replace(/\s+/g, '')] = key; return acc; }, {});
+                            for (let keyword of keywords) {
+                                const foundKey = Object.keys(normalizedKeys).find(k => k.includes(keyword.toUpperCase().replace(/\s+/g, '')));
+                                if (foundKey) return row[normalizedKeys[foundKey]];
+                            }
+                            return null;
+                        };
+                        const parseSafeFloat = (val, def) => {
+                            if (typeof val === 'string') val = val.replace(',', '.');
+                            const num = parseFloat(val); return isNaN(num) ? def : num;
+                        };
+
+                        const newArtifacts = jsonData.map(row => {
+                            const nombre = getValue(row, ['APARATOS', 'APARATO', 'NOMBRE', 'EQUIPO']);
+                            if (!nombre) return null;
+                            return {
+                                id: crypto.randomUUID(),
+                                nombre: String(nombre).trim(),
+                                vatios: parseSafeFloat(getValue(row, ['WATT', 'WATTS', 'POTENCIA']), 0),
+                                factorPotencia: parseSafeFloat(getValue(row, ['FP', 'FACTOR']), 0.9),
+                                horasDiarias: parseSafeFloat(getValue(row, ['H/D', 'HORAS', 'USO']), 0),
+                                fase: parseInt(parseSafeFloat(getValue(row, ['FASE']), 1)),
+                                voltaje: parseInt(parseSafeFloat(getValue(row, ['VOLTAJE', 'VOLT']), 115))
+                            };
+                        }).filter(i => i !== null);
+
+                        if (newArtifacts.length === 0) throw new Error("Sin datos válidos.");
+                        
+                        localStorage.setItem(App.Constants.LS_KEYS.ARTIFACTS, JSON.stringify(newArtifacts));
+                        resolve({ success: true, message: `Importados ${newArtifacts.length} artefactos.` });
+                    } catch (err) { reject({ success: false, message: 'Error Excel: ' + err.message }); }
+                };
+                reader.readAsArrayBuffer(file);
+            } 
+            else if (fileName.endsWith('.json')) {
                 reader.onload = (event) => {
                     try {
                         const importedObj = JSON.parse(event.target.result);
-                        if (!importedObj.config || !importedObj.artifacts) throw new Error("JSON inválido.");
+                        if (!importedObj.config || !importedObj.artifacts) throw new Error("Estructura JSON inválida.");
+                        
                         localStorage.setItem(App.Constants.LS_KEYS.CONFIG, JSON.stringify(importedObj.config));
                         localStorage.setItem(App.Constants.LS_KEYS.ARTIFACTS, JSON.stringify(importedObj.artifacts));
+                        
                         if (importedObj.users) {
                             localStorage.setItem(App.Constants.LS_KEYS.USERS, JSON.stringify(importedObj.users));
                             if(App.Auth) App.Auth.loadUsers();
                         }
+                        
                         this.data = importedObj.config;
-                        resolve({ success: true, message: 'Restaurado correctamente.' });
+                        resolve({ success: true, message: 'Datos JSON restaurados correctamente.' });
                     } catch (e) { reject({ success: false, message: 'Error JSON: ' + e.message }); }
                 };
                 reader.readAsText(file);
             } else { 
-                // Fallback para Excel usando XLSX externo si está cargado
-                 resolve({ success: false, message: 'Importación Excel simplificada en este bloque. Usar versión completa si se requiere.' });
+                reject({ success: false, message: 'Formato no soportado (use .json o .xlsx).' }); 
             }
         });
     }
@@ -516,6 +575,26 @@ App.UI = {
                 window.location.reload();
             }
         });
+
+        // --- FIX: Evento para Importar Archivo (Restaurado) ---
+        const inputImport = document.getElementById('import-file-input');
+        if (inputImport) {
+            inputImport.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                if (confirm("¿Sobrescribir los datos actuales con este archivo?")) {
+                    App.Config.importData(file).then(res => {
+                        this.showMessage('mensaje-import-export', res.message, 'green');
+                        setTimeout(() => window.location.reload(), 1500);
+                    }).catch(err => {
+                        this.showMessage('mensaje-import-export', err.message, 'red');
+                    });
+                } else {
+                    e.target.value = ''; // Limpiar input si cancela
+                }
+            });
+        }
 
         bindClick('btn-cloud-upload', async () => {
             const btn = document.getElementById('btn-cloud-upload');
